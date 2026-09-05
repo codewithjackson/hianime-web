@@ -698,6 +698,8 @@ export function Schedule() {
   const [sel, setSel] = useState('');
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState(false);
+  const PAGE_SIZE = 7;
 
   useEffect(() => {
     const now = new Date();
@@ -717,6 +719,7 @@ export function Schedule() {
   useEffect(() => {
     if (!sel) return;
     setLoading(true);
+    setExpanded(false);
     fetch(`/api/proxy/schedule?date=${sel}`)
       .then((r) => r.json())
       .then((j) => setItems(j.data?.items || []))
@@ -753,22 +756,32 @@ export function Schedule() {
             ))}
           </div>
         ) : items.length ? (
-          <ul className="divide-y divide-white/5">
-            {items.map((it) => (
-              <li key={`${it.id}-${it.episode}`}>
-                <Link
-                  href={`/anime/${it.id}`}
-                  className="flex items-center gap-4 px-4 py-2.5 transition hover:bg-white/5"
-                >
-                  <span className="w-12 shrink-0 text-xs font-bold text-gray-400">{it.time}</span>
-                  <span className="min-w-0 flex-1 truncate text-sm text-gray-100">{it.title}</span>
-                  {it.episode ? (
-                    <span className="shrink-0 text-xs text-gray-400">▸ Episode {it.episode}</span>
-                  ) : null}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul className="divide-y divide-white/5">
+              {(expanded ? items : items.slice(0, PAGE_SIZE)).map((it) => (
+                <li key={`${it.id}-${it.episode}`}>
+                  <Link
+                    href={`/anime/${it.id}`}
+                    className="flex items-center gap-4 px-4 py-2.5 transition hover:bg-white/5"
+                  >
+                    <span className="w-12 shrink-0 text-xs font-bold text-gray-400">{it.time}</span>
+                    <span className="min-w-0 flex-1 truncate text-sm text-gray-100">{it.title}</span>
+                    {it.episode ? (
+                      <span className="shrink-0 text-xs text-gray-400">▸ Episode {it.episode}</span>
+                    ) : null}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            {items.length > PAGE_SIZE ? (
+              <button
+                onClick={() => setExpanded((v) => !v)}
+                className="px-4 py-3 text-sm font-bold text-white hover:text-accent"
+              >
+                {expanded ? 'Show less' : 'Show more'}
+              </button>
+            ) : null}
+          </>
         ) : (
           <p className="p-6 text-center text-sm text-gray-500">No estimated airings for this day.</p>
         )}
