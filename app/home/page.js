@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { AnimeCard, Row } from '../../components/ui';
-import { Spotlight, TopTen, Trending, ContinueWatching } from '../../components/client';
+import { Spotlight, TopTen, Trending, ContinueWatching, Schedule } from '../../components/client';
 import { api } from '../../lib/api';
 
 export default async function HomePage() {
@@ -44,6 +44,8 @@ export default async function HomePage() {
       </Row>
 
       <TopTen data={home.topTen} />
+
+      <Schedule />
 
       <section className="mx-auto mt-8 max-w-7xl px-4">
         <h2 className="mb-3 text-xl font-bold text-accent">Genres</h2>

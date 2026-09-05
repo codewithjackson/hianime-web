@@ -686,3 +686,93 @@ export function ContinueWatching() {
     </section>
   );
 }
+
+function dayStr(d) {
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+export function Schedule() {
+  const [days, setDays] = useState([]);
+  const [sel, setSel] = useState('');
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const now = new Date();
+    const arr = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(now);
+      d.setDate(now.getDate() + i);
+      return {
+        date: dayStr(d),
+        dow: d.toLocaleDateString('en-US', { weekday: 'short' }),
+        label: `${d.toLocaleDateString('en-US', { month: 'short' })} ${d.getDate()}`,
+      };
+    });
+    setDays(arr);
+    setSel(dayStr(now));
+  }, []);
+
+  useEffect(() => {
+    if (!sel) return;
+    setLoading(true);
+    fetch(`/api/proxy/schedule?date=${sel}`)
+      .then((r) => r.json())
+      .then((j) => setItems(j.data?.items || []))
+      .catch(() => setItems([]))
+      .finally(() => setLoading(false));
+  }, [sel]);
+
+  return (
+    <section className="mx-auto mt-10 max-w-7xl px-4">
+      <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-white">
+        <span className="h-5 w-1 rounded bg-accent" /> Estimated Schedule
+      </h2>
+      <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">
+        {days.map((d) => (
+          <button
+            key={d.date}
+            onClick={() => setSel(d.date)}
+            className={`w-20 shrink-0 rounded-xl px-2 py-2.5 text-center transition ${
+              sel === d.date ? 'bg-accent font-bold text-black' : 'bg-surface/70 text-gray-300 hover:bg-white/10'
+            }`}
+          >
+            <p className="text-sm">{d.dow}</p>
+            <p className={`mt-0.5 text-[11px] ${sel === d.date ? 'text-black/70' : 'text-gray-500'}`}>
+              {d.label}
+            </p>
+          </button>
+        ))}
+      </div>
+      <div className="mt-3 overflow-hidden rounded-2xl bg-surface/40">
+        {loading ? (
+          <div className="space-y-2 p-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-10 animate-pulse rounded-lg bg-white/5" />
+            ))}
+          </div>
+        ) : items.length ? (
+          <ul className="divide-y divide-white/5">
+            {items.map((it) => (
+              <li key={`${it.id}-${it.episode}`}>
+                <Link
+                  href={`/anime/${it.id}`}
+                  className="flex items-center gap-4 px-4 py-2.5 transition hover:bg-white/5"
+                >
+                  <span className="w-12 shrink-0 text-xs font-bold text-gray-400">{it.time}</span>
+                  <span className="min-w-0 flex-1 truncate text-sm text-gray-100">{it.title}</span>
+                  {it.episode ? (
+                    <span className="shrink-0 text-xs text-gray-400">▸ Episode {it.episode}</span>
+                  ) : null}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="p-6 text-center text-sm text-gray-500">No estimated airings for this day.</p>
+        )}
+      </div>
+    </section>
+  );
+}
