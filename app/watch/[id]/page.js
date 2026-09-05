@@ -25,9 +25,10 @@ export async function generateMetadata({ params, searchParams }) {
 }
 
 export default async function WatchPage({ params, searchParams }) {
-  const [info, episodes] = await Promise.all([
+  const [info, episodes, schedule] = await Promise.all([
     api.anime(params.id).catch(() => null),
     api.episodes(params.id),
+    api.schedule(params.id).catch(() => null),
   ]);
   const currentEp = searchParams.ep || episodes[0]?.id;
   const type = searchParams.type === 'dub' ? 'dub' : 'sub';
@@ -75,6 +76,30 @@ export default async function WatchPage({ params, searchParams }) {
 
       <div id="watch-grid" className="grid gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
+          {schedule?.airDate ? (
+            <div className="mb-3 flex items-center gap-2 rounded-2xl bg-accent/10 px-4 py-2.5 text-xs text-gray-200 ring-1 ring-accent/30">
+              <span>🚀</span>
+              <span>
+                Next episode estimated{' '}
+                <strong className="text-white">
+                  {new Date(schedule.airDate).toLocaleString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  })}
+                </strong>
+                {typeof schedule.secondsUntil === 'number' && schedule.secondsUntil > 0 ? (
+                  <span className="text-accent">
+                    {' '}
+                    (in {Math.floor(schedule.secondsUntil / 86400)}d{' '}
+                    {Math.floor((schedule.secondsUntil % 86400) / 3600)}h)
+                  </span>
+                ) : null}
+              </span>
+            </div>
+          ) : null}
           <div className="overflow-hidden rounded-2xl bg-black ring-1 ring-white/10">
             {stream?.url ? (
               <iframe
