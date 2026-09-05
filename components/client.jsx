@@ -368,7 +368,7 @@ export function TopTen({ data }) {
       </div>
       <ol className="grid gap-2 md:grid-cols-2">
         {list.slice(0, 10).map((a, n) => (
-          <li key={a.id}>
+          <li key={a.id} className="min-w-0">
             <Link
               href={`/anime/${a.id}`}
               className="group flex items-center gap-3 rounded-xl bg-surface/70 p-2.5 transition hover:bg-surface hover:ring-1 hover:ring-accent/60"
