@@ -267,28 +267,55 @@ export function Spotlight({ items }) {
 }
 
 export function Trending({ items }) {
+  const rowRef = useRef(null);
   if (!items?.length) return null;
+  function scroll(dir) {
+    const el = rowRef.current;
+    if (el) el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: 'smooth' });
+  }
   return (
     <section className="mx-auto mt-8 max-w-7xl px-4">
-      <h2 className="mb-3 flex items-center gap-2 text-xl font-bold text-white">
-        <span className="h-5 w-1 rounded bg-accent" /> Trending
-      </h2>
-      <div className="no-scrollbar flex gap-4 overflow-x-auto pb-2">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-xl font-bold text-white">
+          <span className="h-5 w-1 rounded bg-accent" /> Trending
+        </h2>
+        <div className="hidden gap-2 sm:flex">
+          <button
+            onClick={() => scroll(-1)}
+            aria-label="scroll left"
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface text-lg text-gray-300 transition hover:bg-accent hover:text-black"
+          >
+            ‹
+          </button>
+          <button
+            onClick={() => scroll(1)}
+            aria-label="scroll right"
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface text-lg text-gray-300 transition hover:bg-accent hover:text-black"
+          >
+            ›
+          </button>
+        </div>
+      </div>
+      <div ref={rowRef} className="no-scrollbar flex gap-3 overflow-x-auto pb-2 sm:gap-4">
         {items.map((a, n) => (
-          <Link key={a.id} href={`/anime/${a.id}`} className="group flex shrink-0 items-end gap-1">
+          <Link key={a.id} href={`/anime/${a.id}`} className="group flex shrink-0 items-end gap-1.5">
             <span className="text-4xl font-black leading-none text-white/15 transition group-hover:text-accent/60 sm:text-5xl">
               {String(n + 1).padStart(2, '0')}
             </span>
-            <div className="w-[96px] overflow-hidden rounded-lg bg-surface sm:w-[110px]">
-              {a.poster ? (
-                <img
-                  src={a.poster}
-                  alt={a.title}
-                  loading="lazy"
-                  className="h-[132px] w-full object-cover transition group-hover:scale-105 sm:h-[150px]"
-                />
-              ) : null}
-              <p className="line-clamp-2 p-1.5 text-[11px] font-medium text-gray-200">{a.title}</p>
+            <div className="w-[132px] overflow-hidden rounded-lg bg-surface sm:w-[168px] lg:w-[188px]">
+              <div className="h-[198px] w-full overflow-hidden bg-black/30 sm:h-[252px] lg:h-[282px]">
+                {a.poster ? (
+                  <img
+                    src={a.poster}
+                    alt={a.title}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                  />
+                ) : null}
+              </div>
+              <p className="line-clamp-2 min-h-[2rem] p-1.5 text-[11px] font-medium text-gray-200 sm:text-xs">
+                {a.title}
+              </p>
             </div>
           </Link>
         ))}
