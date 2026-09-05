@@ -71,7 +71,7 @@ export function Row({ title, href, children }) {
 
 export function Grid({ items }) {
   return (
-    <div className="grid grid-cols-2 gap-2 min-[420px]:grid-cols-3 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
+    <div className="grid grid-cols-2 gap-2 min-[420px]:grid-cols-3 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6 2xl:grid-cols-8">
       {items.map((a) => (
         <div key={a.id} className="[&>a]:w-full">
           <AnimeCard anime={a} />
