@@ -6,9 +6,8 @@ import { useEffect, useState } from 'react';
 export default function RandomPage() {
   const [err, setErr] = useState('');
   useEffect(() => {
-    const base =
-      process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
-    fetch(`${base}/anime/random`)
+    // Same-origin proxy keeps the API key server-side.
+    fetch(`/api/proxy/anime/random`)
       .then((r) => {
         if (!r.ok) throw new Error(`API ${r.status}`);
         return r.json();
