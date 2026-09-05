@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 import { Header } from '../components/client';
 
@@ -82,6 +83,7 @@ export default function RootLayout({ children }) {
             © HiAnime — for educational and personal use only.
           </p>
         </footer>
+        <Analytics />
       </body>
     </html>
   );
