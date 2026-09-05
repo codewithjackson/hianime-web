@@ -60,7 +60,7 @@ export function Header() {
           HiAnime
         </Link>
         <nav className="hidden items-center gap-5 text-sm font-medium text-gray-300 lg:flex">
-          <Link href="/" className="hover:text-white">Home</Link>
+          <Link href="/home" className="hover:text-white">Home</Link>
           <Link href="/explore/movie" className="hover:text-white">Movies</Link>
           <Link href="/explore/tv" className="hover:text-white">TV Series</Link>
           <div
