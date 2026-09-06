@@ -1,10 +1,13 @@
 import Link from 'next/link';
+import { HoverTip } from './client';
 
-export function AnimeCard({ anime }) {
-  return (
+export function AnimeCard({ anime, qtip = true, fluid = false }) {
+  const card = (
     <Link
       href={`/anime/${anime.id}`}
-      className="group w-[132px] shrink-0 overflow-hidden rounded-xl bg-surface/70 transition duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/50 hover:ring-1 hover:ring-accent/60 sm:w-[150px] lg:w-[205px]"
+      className={`group block shrink-0 overflow-hidden rounded-xl bg-surface/70 transition duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/50 hover:ring-1 hover:ring-accent/60 ${
+        fluid ? 'w-full' : 'w-[132px] sm:w-[150px] lg:w-[205px]'
+      }`}
     >
       <div className="relative h-[185px] w-full overflow-hidden bg-black/40 sm:h-[210px] lg:h-[290px]">
         {anime.poster ? (
@@ -46,6 +49,8 @@ export function AnimeCard({ anime }) {
       </div>
     </Link>
   );
+  if (!qtip || !anime?.id) return card;
+  return <HoverTip anime={anime}>{card}</HoverTip>;
 }
 
 export function Row({ title, href, children }) {
@@ -73,9 +78,7 @@ export function Grid({ items }) {
   return (
     <div className="grid grid-cols-2 gap-2 min-[420px]:grid-cols-3 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6 2xl:grid-cols-8">
       {items.map((a) => (
-        <div key={a.id} className="[&>a]:w-full">
-          <AnimeCard anime={a} />
-        </div>
+        <AnimeCard key={a.id} anime={a} fluid />
       ))}
     </div>
   );

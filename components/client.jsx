@@ -1130,3 +1130,150 @@ export function FilterForm({ genres, initial }) {
     </form>
   );
 }
+
+const qtipCache = new Map();
+
+export function HoverTip({ anime, children }) {
+  const wrapRef = useRef(null);
+  const openTimer = useRef(null);
+  const hideTimer = useRef(null);
+  const abortRef = useRef(null);
+  const [data, setData] = useState(null);
+  const [pos, setPos] = useState({ left: 0, top: 0 });
+  const [visible, setVisible] = useState(false);
+
+  function clearTimers() {
+    clearTimeout(openTimer.current);
+    clearTimeout(hideTimer.current);
+    openTimer.current = hideTimer.current = null;
+  }
+
+  function onEnter() {
+    if (typeof window === 'undefined') return;
+    if (window.matchMedia && !window.matchMedia('(hover: hover)').matches) return;
+    clearTimeout(hideTimer.current);
+    if (data) {
+      place();
+      setVisible(true);
+      return;
+    }
+    if (openTimer.current || !anime?.id) return;
+    openTimer.current = setTimeout(async () => {
+      openTimer.current = null;
+      if (qtipCache.has(anime.id)) {
+        setData(qtipCache.get(anime.id));
+        place();
+        setVisible(true);
+        return;
+      }
+      try {
+        abortRef.current?.abort();
+        abortRef.current = new AbortController();
+        const res = await fetch(`/api/proxy/anime/${anime.id}`, {
+          signal: abortRef.current.signal,
+        });
+        const json = await res.json();
+        if (json.data) {
+          qtipCache.set(anime.id, json.data);
+          setData(json.data);
+          place();
+          setVisible(true);
+        }
+      } catch {
+        /* hover preview is best-effort */
+      }
+    }, 350);
+  }
+
+  function place() {
+    const r = wrapRef.current?.getBoundingClientRect();
+    if (!r) return;
+    const W = 300;
+    let left = r.right + 10;
+    if (left + W > window.innerWidth - 8) left = Math.max(8, r.left - W - 10);
+    const H = 340;
+    let top = Math.max(8, Math.min(r.top - 20, window.innerHeight - H - 8));
+    setPos({ left, top });
+  }
+
+  function onLeave() {
+    clearTimeout(openTimer.current);
+    openTimer.current = null;
+    abortRef.current?.abort();
+    clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => setVisible(false), 150);
+  }
+
+  useEffect(() => {
+    function onScroll() {
+      setVisible(false);
+    }
+    window.addEventListener('scroll', onScroll, true);
+    return () => {
+      window.removeEventListener('scroll', onScroll, true);
+      clearTimers();
+      abortRef.current?.abort();
+    };
+  }, []);
+
+  const d = data || {};
+  return (
+    <div ref={wrapRef} onMouseEnter={onEnter} onMouseLeave={onLeave} className="contents">
+      {children}
+      {visible && data ? (
+        <div
+          className="fixed z-[70] w-[300px] rounded-2xl bg-[#2b2a3f] p-4 shadow-2xl shadow-black/70 ring-1 ring-white/10"
+          style={{ left: pos.left, top: pos.top }}
+          onMouseEnter={() => clearTimeout(hideTimer.current)}
+          onMouseLeave={() => setVisible(false)}
+        >
+          <p className="font-bold leading-snug text-white">{d.title || anime?.title}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
+            {d.MAL_score ? <span className="text-amber-300">★ {d.MAL_score}</span> : null}
+            <span className="rounded bg-white px-1 font-bold text-black">HD</span>
+            {typeof d.episodes?.sub === 'number' ? (
+              <span className="rounded bg-green-500/20 px-1 font-bold text-green-300">
+                CC {d.episodes.sub}
+              </span>
+            ) : null}
+            {typeof d.episodes?.dub === 'number' ? (
+              <span className="rounded bg-sky-500/20 px-1 font-bold text-sky-300">
+                🎙 {d.episodes.dub}
+              </span>
+            ) : null}
+            {d.type ? (
+              <span className="rounded bg-accent px-1.5 font-bold text-black">{d.type}</span>
+            ) : null}
+          </div>
+          {d.synopsis ? (
+            <p className="line-clamp-4 mt-2 text-xs leading-relaxed text-gray-300">{d.synopsis}</p>
+          ) : null}
+          <div className="mt-2 space-y-0.5 text-[11px] text-gray-400">
+            {d.aired?.from ? (
+              <p>
+                <span className="text-gray-500">Aired:</span> {d.aired.from}
+                {d.aired?.to ? ` to ${d.aired.to}` : ''}
+              </p>
+            ) : null}
+            {d.status ? (
+              <p>
+                <span className="text-gray-500">Status:</span> {d.status}
+              </p>
+            ) : null}
+            {!!d.genres?.length ? (
+              <p className="truncate">
+                <span className="text-gray-500">Genres:</span> {d.genres.slice(0, 5).join(', ')}
+              </p>
+            ) : null}
+          </div>
+          <Link
+            href={`/watch/${anime.id}`}
+            className="mt-3 flex items-center justify-center gap-1.5 rounded-full bg-accent py-2 text-xs font-bold text-black transition hover:brightness-110"
+          >
+            ▶ Watch now
+          </Link>
+        </div>
+      ) : null}
+    </div>
+  );
+}

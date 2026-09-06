@@ -189,9 +189,7 @@ export default async function AnimePage({ params }) {
                 <h2 className="mb-4 text-xl font-bold text-accent">Recommended For You</h2>
                 <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 xl:grid-cols-5">
                   {a.recommended.slice(0, 10).map((r) => (
-                    <div key={r.id} className="[&>a]:w-full">
-                      <AnimeCard anime={r} />
-                    </div>
+                    <AnimeCard key={r.id} anime={r} fluid />
                   ))}
                 </div>
               </section>
