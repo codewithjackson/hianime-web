@@ -67,6 +67,7 @@ export function Header() {
   ];
 
   return (
+    <>
     <header className="sticky top-0 z-50 border-b border-white/5 bg-base/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:gap-4">
         <button
@@ -179,6 +180,7 @@ export function Header() {
           <Link href="/explore/tv" className="shrink-0">TV Series</Link>
         </nav>
       </div>
+      </header>
       {menuOpen ? (
         <div
           className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
@@ -229,7 +231,7 @@ export function Header() {
           </Link>
         </nav>
       </aside>
-    </header>
+    </>
   );
 }
 
