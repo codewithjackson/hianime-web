@@ -20,7 +20,7 @@ export default async function LandingPage() {
           <div className="relative grid gap-6 p-6 sm:p-10 md:grid-cols-2 md:p-14">
             <div>
               <p className="text-4xl font-black tracking-tight text-white sm:text-5xl">
-                Hi<span className="text-accent">Anime</span>
+                Ani<span className="text-accent">maze</span>
               </p>
               <form action="/browse" method="get" className="mt-6 flex gap-2">
                 <input
