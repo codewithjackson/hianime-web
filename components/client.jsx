@@ -162,7 +162,7 @@ export function Header() {
         <button
           onClick={() => setMobileSearch((v) => !v)}
           aria-label="Search"
-          className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg text-accent transition hover:bg-white/10 sm:hidden"
+          className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xl text-accent transition hover:bg-white/10 sm:hidden"
         >
           ⌕
         </button>
@@ -324,7 +324,7 @@ export function Mascot() {
 
 function MetaPills({ item }) {
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+    <div className="mt-3 hidden flex-wrap items-center gap-2 text-xs sm:flex">
       {item.quality ? (
         <span className="rounded bg-white px-1.5 py-0.5 font-bold text-black">{item.quality}</span>
       ) : null}
@@ -370,32 +370,32 @@ export function Spotlight({ items }) {
       ) : null}
       <div className="absolute inset-0 bg-gradient-to-r from-base via-base/80 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-base to-transparent" />
-      <div className="relative mx-auto max-w-7xl px-4 py-12 sm:py-16 md:py-24">
+      <div className="relative mx-auto max-w-7xl px-4 py-8 sm:py-16 md:py-24">
         <p className="text-sm font-bold tracking-wide text-accent">#{cur.rank} Spotlight</p>
-        <h1 className="mt-2 max-w-2xl text-3xl font-black leading-tight text-white sm:text-4xl md:text-6xl">
+        <h1 className="mt-2 max-w-2xl text-2xl font-black leading-tight text-white sm:text-4xl md:text-6xl">
           {cur.title}
         </h1>
         {cur.alternativeTitle && cur.alternativeTitle !== cur.title ? (
           <p className="mt-1 text-sm text-gray-400">{cur.alternativeTitle}</p>
         ) : null}
         <MetaPills item={cur} />
-        <p className="line-clamp-2 mt-4 max-w-xl text-sm leading-relaxed text-gray-300">
+        <p className="line-clamp-2 mt-4 hidden max-w-xl text-sm leading-relaxed text-gray-300 sm:block">
           {cur.synopsis}
         </p>
-        <div className="mt-6 flex flex-wrap items-center gap-3">
+        <div className="mt-5 flex flex-wrap items-center gap-3 sm:mt-6">
           <Link
             href={`/watch/${cur.id}`}
-            className="rounded-full bg-accent px-7 py-2.5 text-sm font-bold text-black transition hover:brightness-110"
+            className="rounded-full bg-accent px-5 py-2 text-sm font-bold text-black transition hover:brightness-110 sm:px-7 sm:py-2.5"
           >
             ▶ Watch Now
           </Link>
           <Link
             href={`/anime/${cur.id}`}
-            className="rounded-full bg-white/10 px-7 py-2.5 text-sm font-medium text-white ring-1 ring-white/20 transition hover:bg-white/20"
+            className="rounded-full bg-white/10 px-5 py-2 text-sm font-medium text-white ring-1 ring-white/20 transition hover:bg-white/20 sm:px-7 sm:py-2.5"
           >
             Detail
           </Link>
-          <div className="ml-2 flex items-center gap-2">
+          <div className="ml-2 hidden items-center gap-2 sm:flex">
             <button
               onClick={() => setI((i - 1 + items.length) % items.length)}
               className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
@@ -412,7 +412,7 @@ export function Spotlight({ items }) {
             </button>
           </div>
         </div>
-        <div className="mt-6 flex gap-1.5">
+        <div className="mt-6 hidden gap-1.5 sm:flex">
           {items.slice(0, 10).map((_, n) => (
             <button
               key={n}
