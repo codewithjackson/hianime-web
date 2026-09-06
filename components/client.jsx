@@ -10,6 +10,7 @@ export function Header() {
   const [suggest, setSuggest] = useState([]);
   const [genres, setGenres] = useState([]);
   const [showGenres, setShowGenres] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const timer = useRef(null);
   const boxRef = useRef(null);
   // Same-origin proxy keeps the API key server-side.
@@ -53,9 +54,30 @@ export function Header() {
     return () => clearTimeout(timer.current);
   }, [q, base]);
 
+  const MENU_LINKS = [
+    ['Home', '/home'],
+    ['Subbed Anime', '/explore/subbed-anime'],
+    ['Dubbed Anime', '/explore/dubbed-anime'],
+    ['Most Popular', '/explore/most-popular'],
+    ['Movies', '/explore/movie'],
+    ['TV Series', '/explore/tv'],
+    ['OVAs', '/explore/ova'],
+    ['ONAs', '/explore/ona'],
+    ['Specials', '/explore/special'],
+  ];
+
   return (
     <header className="sticky top-0 z-50 border-b border-white/5 bg-base/95 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
+      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:gap-4">
+        <button
+          onClick={() => setMenuOpen(true)}
+          aria-label="Open menu"
+          className="flex h-9 w-9 shrink-0 flex-col items-center justify-center gap-1 rounded-lg transition hover:bg-white/10"
+        >
+          <span className="h-0.5 w-5 rounded bg-gray-200" />
+          <span className="h-0.5 w-5 rounded bg-gray-200" />
+          <span className="h-0.5 w-5 rounded bg-gray-200" />
+        </button>
         <Link href="/" className="shrink-0 text-xl font-black tracking-tight text-accent sm:text-2xl">
           HiAnime
         </Link>
@@ -157,6 +179,56 @@ export function Header() {
           <Link href="/explore/tv" className="shrink-0">TV Series</Link>
         </nav>
       </div>
+      {menuOpen ? (
+        <div
+          className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
+          onClick={() => setMenuOpen(false)}
+        />
+      ) : null}
+      <aside
+        className={`fixed inset-y-0 left-0 z-[61] flex w-72 max-w-[85vw] flex-col bg-[#2b2a3f] shadow-2xl transition-transform duration-300 ${
+          menuOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <button
+          onClick={() => setMenuOpen(false)}
+          className="flex items-center gap-1 px-5 py-4 text-sm font-bold text-gray-200 hover:text-white"
+        >
+          ‹ Close menu
+        </button>
+        <nav className="flex-1 overflow-y-auto pb-6">
+          {MENU_LINKS.map(([label, href]) => (
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setMenuOpen(false)}
+              className="block border-b border-white/5 px-5 py-2.5 text-sm font-bold text-gray-100 transition hover:bg-white/5 hover:text-accent"
+            >
+              {label}
+            </Link>
+          ))}
+          <p className="px-5 pb-1 pt-4 text-sm font-bold text-gray-100">Genre</p>
+          <div className="grid grid-cols-2 gap-x-2 px-5">
+            {(genres.length ? genres.slice(0, 15) : []).map((g) => (
+              <Link
+                key={g}
+                href={`/genre/${g}`}
+                onClick={() => setMenuOpen(false)}
+                className="py-1 text-xs capitalize text-gray-300 hover:text-accent"
+              >
+                {g.replaceAll('-', ' ')}
+              </Link>
+            ))}
+          </div>
+          <Link
+            href="/genres"
+            onClick={() => setMenuOpen(false)}
+            className="block px-5 py-2 text-xs font-bold text-gray-200 hover:text-accent"
+          >
+            + More
+          </Link>
+        </nav>
+      </aside>
     </header>
   );
 }
