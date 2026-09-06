@@ -816,3 +816,76 @@ export function Schedule() {
     </section>
   );
 }
+
+export function Synopsis({ text }) {
+  const [open, setOpen] = useState(false);
+  if (!text) return null;
+  return (
+    <div>
+      <p className={`max-w-3xl text-sm leading-relaxed text-gray-200 ${open ? '' : 'line-clamp-3'}`}>
+        {text}
+      </p>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="mt-1 text-xs font-bold text-white hover:text-accent"
+      >
+        {open ? '− Less' : '+ More'}
+      </button>
+    </div>
+  );
+}
+
+export function CastSection({ items }) {
+  const [open, setOpen] = useState(false);
+  if (!items?.length) return null;
+  const shown = open ? items : items.slice(0, 6);
+  return (
+    <section className="mt-10">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-xl font-bold text-white">
+          <span className="h-5 w-1 rounded bg-accent" /> Characters &amp; Voice Actors
+        </h2>
+        {items.length > 6 ? (
+          <button
+            onClick={() => setOpen((v) => !v)}
+            className="rounded-full bg-surface px-4 py-1 text-xs font-medium text-gray-300 transition hover:bg-accent hover:text-black"
+          >
+            {open ? 'Show less' : `View more →`}
+          </button>
+        ) : null}
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+        {shown.map((c) => {
+          const va = c.voiceActors?.[0];
+          return (
+            <div
+              key={c.id || c.name}
+              className="flex items-center gap-3 rounded-xl bg-surface/70 p-2.5 ring-1 ring-white/5"
+            >
+              <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                {c.imageUrl ? (
+                  <img src={c.imageUrl} alt={c.name} loading="lazy" className="h-12 w-12 shrink-0 rounded-full object-cover" />
+                ) : null}
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-bold text-white">{c.name}</p>
+                  <p className="text-[11px] text-gray-400">{c.role}</p>
+                </div>
+              </div>
+              {va ? (
+                <div className="flex min-w-0 flex-1 items-center justify-end gap-2.5 text-right">
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-bold text-white">{va.name}</p>
+                    <p className="text-[11px] text-gray-400">{va.cast || 'Voice'}</p>
+                  </div>
+                  {va.imageUrl ? (
+                    <img src={va.imageUrl} alt={va.name} loading="lazy" className="h-12 w-12 shrink-0 rounded-full object-cover" />
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
