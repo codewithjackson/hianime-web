@@ -35,7 +35,11 @@ export default async function FilterPage({ searchParams }) {
         {' • '}
         <span className="text-gray-300">Filter</span>
       </nav>
-      <FilterForm genres={meta.genres || []} initial={searchParams} />
+      <FilterForm
+        key={JSON.stringify(searchParams)}
+        genres={meta.genres || []}
+        initial={searchParams}
+      />
       {data ? (
         <div className="mt-6">
           <p className="mb-3 text-xs text-gray-500">

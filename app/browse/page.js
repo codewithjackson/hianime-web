@@ -54,6 +54,7 @@ export default async function BrowsePage({ searchParams }) {
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
           <input
             name="keyword"
+            key={`kw-${searchParams.keyword || ''}`}
             defaultValue={searchParams.keyword || ''}
             placeholder="Keyword..."
             className="col-span-2 rounded-xl bg-base px-3 py-2 text-sm outline-none ring-1 ring-white/10 placeholder:text-gray-500 focus:ring-2 focus:ring-accent md:col-span-1"
@@ -63,9 +64,10 @@ export default async function BrowsePage({ searchParams }) {
               <span className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-gray-500">
                 {name}
               </span>
-              <select
-                name={name}
-                defaultValue={searchParams[name] || opts[0]}
+            <select
+              name={name}
+              key={`${name}-${searchParams[name] || 'all'}`}
+              defaultValue={searchParams[name] || opts[0]}
                 className="w-full rounded-xl bg-base px-3 py-2 text-sm capitalize outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-accent"
               >
                 {opts.map((o) => (
