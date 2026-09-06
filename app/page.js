@@ -19,8 +19,8 @@ export default async function LandingPage() {
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-transparent" />
           <div className="relative grid gap-6 p-6 sm:p-10 md:grid-cols-2 md:p-14">
             <div>
-              <p className="text-4xl font-black tracking-tight text-white sm:text-5xl">
-                Ani<span className="text-accent">maze</span>
+              <p className="text-5xl font-black tracking-tight sm:text-6xl">
+                <span className="text-white">An</span><span className="text-accent drop-shadow-[0_0_18px_rgba(167,139,250,0.55)]">!</span><span className="text-accent">maze</span>
               </p>
               <form action="/browse" method="get" className="mt-6 flex gap-2">
                 <input

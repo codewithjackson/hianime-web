@@ -79,8 +79,8 @@ export function Header() {
           <span className="h-0.5 w-5 rounded bg-gray-200" />
           <span className="h-0.5 w-5 rounded bg-gray-200" />
         </button>
-        <Link href="/" className="shrink-0 text-xl font-black tracking-tight text-white sm:text-2xl">
-          Ani<span className="text-accent">maze</span>
+        <Link href="/" className="shrink-0 text-2xl font-black tracking-tight sm:text-3xl">
+          <span className="text-white">An</span><span className="text-accent drop-shadow-[0_0_14px_rgba(167,139,250,0.55)]">!</span><span className="text-accent">maze</span>
         </Link>
         <nav className="hidden items-center gap-5 text-sm font-medium text-gray-300 lg:flex">
           <Link href="/home" className="hover:text-white">Home</Link>

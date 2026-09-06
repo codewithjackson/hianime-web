@@ -43,7 +43,7 @@ export default function RootLayout({ children }) {
         <main className="min-h-screen pb-16">{children}</main>        <footer className="border-t border-white/5 bg-black/30">
           <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 md:grid-cols-3">
             <div>
-              <p className="text-xl font-black text-white">Ani<span className="text-accent">maze</span></p>
+              <p className="text-2xl font-black tracking-tight"><span className="text-white">An</span><span className="text-accent drop-shadow-[0_0_14px_rgba(167,139,250,0.55)]">!</span><span className="text-accent">maze</span></p>
               <p className="mt-2 max-w-xs text-xs leading-relaxed text-gray-500">
                 Watch subbed and dubbed anime online. Demo frontend — all content
                 belongs to its original owners.
