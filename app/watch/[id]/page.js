@@ -107,7 +107,7 @@ export default async function WatchPage({ params, searchParams }) {
                 src={stream.url}
                 title={`${info?.title || 'Anime'} episode ${epNum ?? ''}`}
                 allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-orientation-lock"
                 allowFullScreen
                 className="aspect-video w-full"
               />
