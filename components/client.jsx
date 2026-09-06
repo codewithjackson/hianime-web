@@ -11,9 +11,8 @@ export function Header() {
   const [genres, setGenres] = useState([]);
   const [showGenres, setShowGenres] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileSearch, setMobileSearch] = useState(false);
   const timer = useRef(null);
-  const boxRef = useRef(null);
-  // Same-origin proxy keeps the API key server-side.
   const base = '/api/proxy';
 
   function clearSearch() {
@@ -23,7 +22,8 @@ export function Header() {
 
   useEffect(() => {
     function onDown(e) {
-      if (boxRef.current && !boxRef.current.contains(e.target)) setSuggest([]);
+      if (e.target?.closest?.('[data-search-area]')) return;
+      setSuggest([]);
     }
     document.addEventListener('mousedown', onDown);
     return () => document.removeEventListener('mousedown', onDown);
@@ -130,7 +130,7 @@ export function Header() {
           <Link href="/explore/most-popular" className="hover:text-white">Most Popular</Link>
           <Link href="/explore/top-upcoming" className="hover:text-white">Top Upcoming</Link>
         </nav>
-        <div ref={boxRef} className="relative ml-auto w-full max-w-[9rem] sm:max-w-xs">
+        <div data-search-area className="relative ml-auto hidden w-full max-w-xs sm:block">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -155,23 +155,70 @@ export function Header() {
           </form>
           {suggest.length > 0 ? (
             <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-lg bg-surface shadow-2xl ring-1 ring-white/10">
-              {suggest.map((s) => (
-                <Link
-                  key={s.id}
-                  href={`/anime/${s.id}`}
-                  onClick={clearSearch}
-                  className="flex items-center gap-2 px-2 py-1.5 hover:bg-white/10"
-                >
-                  {s.poster ? (
-                    <img src={s.poster} alt="" className="h-10 w-8 rounded object-cover" />
-                  ) : null}
-                  <span className="text-xs">{s.title}</span>
-                </Link>
-              ))}
+              <SuggestList items={suggest} query={q} onPick={clearSearch} />
             </div>
           ) : null}
         </div>
+        <button
+          onClick={() => setMobileSearch((v) => !v)}
+          aria-label="Search"
+          className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg text-accent transition hover:bg-white/10 sm:hidden"
+        >
+          ⌕
+        </button>
       </div>
+      {mobileSearch ? (
+        <div data-search-area className="border-t border-white/5 px-4 py-2 sm:hidden">
+          <div className="flex gap-2">
+            <Link
+              href="/filter"
+              aria-label="Filter"
+              className="flex h-10 w-11 shrink-0 items-center justify-center rounded-xl bg-surface text-gray-300"
+            >
+              ⏷
+            </Link>
+            <form
+              className="flex flex-1 gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (q.trim()) {
+                  router.push(`/browse?keyword=${encodeURIComponent(q)}`);
+                  clearSearch();
+                  setMobileSearch(false);
+                }
+              }}
+            >
+              <input
+                autoFocus
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search anime..."
+                className="w-full rounded-xl bg-white px-4 py-2 text-sm text-black outline-none placeholder:text-gray-500"
+              />
+              <button
+                type="submit"
+                aria-label="Search"
+                className="flex h-10 w-11 shrink-0 items-center justify-center rounded-xl bg-surface text-lg text-gray-200"
+              >
+                ⌕
+              </button>
+            </form>
+          </div>
+          {suggest.length > 0 ? (
+            <div className="mt-2 overflow-hidden rounded-xl bg-surface shadow-2xl ring-1 ring-white/10">
+              <SuggestList
+                items={suggest}
+                query={q}
+                detailed
+                onPick={() => {
+                  clearSearch();
+                  setMobileSearch(false);
+                }}
+              />
+            </div>
+          ) : null}
+        </div>
+      ) : null}
       <div className="border-t border-white/5 lg:hidden">
         <nav className="no-scrollbar mx-auto flex max-w-7xl items-center gap-4 overflow-x-auto px-4 py-2 text-xs text-gray-300">
           <Link href="/explore/subbed-anime" className="shrink-0">Subbed</Link>
@@ -1273,6 +1320,41 @@ export function HoverTip({ anime, children }) {
             ▶ Watch now
           </Link>
         </div>
+      ) : null}
+    </div>
+  );
+}
+
+export function SuggestList({ items, query, detailed, onPick }) {
+  if (!items?.length) return null;
+  return (
+    <div>
+      {items.map((s) => (
+        <Link
+          key={s.id}
+          href={`/anime/${s.id}`}
+          onClick={onPick}
+          className="flex items-center gap-3 border-b border-white/5 px-3 py-2 hover:bg-white/10"
+        >
+          {s.poster ? (
+            <img src={s.poster} alt="" className="h-12 w-10 shrink-0 rounded object-cover" />
+          ) : null}
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-medium text-white">{s.title}</span>
+            {detailed && s.aired ? (
+              <span className="mt-0.5 block truncate text-[11px] text-gray-400">{s.aired}</span>
+            ) : null}
+          </span>
+        </Link>
+      ))}
+      {query?.trim() ? (
+        <Link
+          href={`/browse?keyword=${encodeURIComponent(query.trim())}`}
+          onClick={onPick}
+          className="block bg-accent px-3 py-2.5 text-center text-sm font-bold text-black transition hover:brightness-110"
+        >
+          View all results →
+        </Link>
       ) : null}
     </div>
   );
