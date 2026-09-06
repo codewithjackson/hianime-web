@@ -183,7 +183,7 @@ export function Header() {
       </header>
       {menuOpen ? (
         <div
-          className="fixed inset-0 z-[60] bg-[#201f31]/35 backdrop-blur-2xl"
+          className="fixed inset-0 z-[60] bg-[#201f31]/25 backdrop-blur-xl"
           onClick={() => setMenuOpen(false)}
         />
       ) : null}
