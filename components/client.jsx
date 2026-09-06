@@ -350,16 +350,31 @@ function MetaPills({ item }) {
 
 export function Spotlight({ items }) {
   const [i, setI] = useState(0);
+  const touchX = useRef(null);
   useEffect(() => {
     if (!items?.length) return;
     const t = setInterval(() => setI((v) => (v + 1) % items.length), 8000);
     return () => clearInterval(t);
-  }, [items?.length]);
+  }, [items?.length, i]);
   if (!items?.length) return null;
   const cur = items[i % items.length];
   const art = cur.banner || cur.poster;
+  function onTouchStart(e) {
+    touchX.current = e.touches[0].clientX;
+  }
+  function onTouchEnd(e) {
+    if (touchX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchX.current;
+    touchX.current = null;
+    if (Math.abs(dx) < 50) return;
+    setI((v) => (v + (dx < 0 ? 1 : items.length - 1)) % items.length);
+  }
   return (
-    <div className="relative overflow-hidden bg-black">
+    <div
+      className="relative touch-pan-y overflow-hidden bg-black"
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
       {art ? (
         <img
           key={art}
@@ -457,9 +472,9 @@ export function Trending({ items }) {
           </button>
         </div>
       </div>
-      <div ref={rowRef} className="no-scrollbar flex gap-3 overflow-x-auto pb-2 sm:gap-4">
+      <div ref={rowRef} className="no-scrollbar flex snap-x snap-proximity gap-3 overflow-x-auto pb-2 sm:gap-4">
         {items.map((a, n) => (
-          <Link key={a.id} href={`/anime/${a.id}`} className="group flex shrink-0 items-end gap-1.5">
+          <Link key={a.id} href={`/anime/${a.id}`} className="group flex shrink-0 snap-start items-end gap-1.5">
             <span className="text-4xl font-black leading-none text-white/15 transition group-hover:text-accent/60 sm:text-5xl">
               {String(n + 1).padStart(2, '0')}
             </span>
@@ -849,12 +864,12 @@ export function ContinueWatching() {
       <h2 className="mb-3 flex items-center gap-2 text-xl font-bold text-white">
         <span className="h-5 w-1 rounded bg-accent" /> Continue Watching
       </h2>
-      <div className="no-scrollbar flex gap-3 overflow-x-auto pb-2">
+      <div className="no-scrollbar flex snap-x snap-proximity gap-3 overflow-x-auto pb-2">
         {list.map((x) => (
           <Link
             key={x.animeId}
             href={`/watch/${x.animeId}?ep=${x.ep}&type=${x.type || 'sub'}`}
-            className="group w-[220px] shrink-0 overflow-hidden rounded-xl bg-surface/70 transition hover:ring-1 hover:ring-accent/60"
+            className="group w-[220px] shrink-0 snap-start overflow-hidden rounded-xl bg-surface/70 transition hover:ring-1 hover:ring-accent/60"
           >
             <div className="flex gap-2 p-2">
               {x.poster ? (
@@ -920,12 +935,12 @@ export function Schedule() {
       <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-white">
         <span className="h-5 w-1 rounded bg-accent" /> Estimated Schedule
       </h2>
-      <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">
+      <div className="no-scrollbar flex snap-x snap-proximity gap-2 overflow-x-auto pb-1">
         {days.map((d) => (
           <button
             key={d.date}
             onClick={() => setSel(d.date)}
-            className={`w-20 shrink-0 rounded-xl px-2 py-2.5 text-center transition ${
+            className={`w-20 shrink-0 snap-start rounded-xl px-2 py-2.5 text-center transition ${
               sel === d.date ? 'bg-accent font-bold text-black' : 'bg-surface/70 text-gray-300 hover:bg-white/10'
             }`}
           >

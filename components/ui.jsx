@@ -5,7 +5,7 @@ export function AnimeCard({ anime, qtip = true, fluid = false }) {
   const card = (
     <Link
       href={`/anime/${anime.id}`}
-      className={`group block shrink-0 overflow-hidden rounded-xl bg-surface/70 transition duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/50 hover:ring-1 hover:ring-accent/60 ${
+      className={`group block shrink-0 snap-start overflow-hidden rounded-xl bg-surface/70 transition duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/50 hover:ring-1 hover:ring-accent/60 ${
         fluid ? 'w-full' : 'w-[132px] sm:w-[150px] lg:w-[205px]'
       }`}
     >
@@ -69,7 +69,7 @@ export function Row({ title, href, children }) {
           </Link>
         ) : null}
       </div>
-      <div className="no-scrollbar flex gap-3 overflow-x-auto pb-2">{children}</div>
+      <div className="no-scrollbar flex snap-x snap-proximity gap-3 overflow-x-auto pb-2">{children}</div>
     </section>
   );
 }
