@@ -8,7 +8,7 @@ export default function Loading() {
       <Shimmer className="h-64 w-full md:h-96" />
       <div className="no-scrollbar mt-8 flex gap-3 overflow-hidden">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="w-[132px] shrink-0 sm:w-[150px]">
+          <div key={i} className="w-[132px] shrink-0 sm:w-[150px] lg:w-[205px]">
             <Shimmer className="h-[210px] w-full" />
             <Shimmer className="mt-2 h-4 w-3/4" />
           </div>

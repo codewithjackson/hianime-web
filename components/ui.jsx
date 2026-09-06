@@ -4,9 +4,9 @@ export function AnimeCard({ anime }) {
   return (
     <Link
       href={`/anime/${anime.id}`}
-      className="group w-[132px] shrink-0 overflow-hidden rounded-xl bg-surface/70 transition duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/50 hover:ring-1 hover:ring-accent/60 sm:w-[150px]"
+      className="group w-[132px] shrink-0 overflow-hidden rounded-xl bg-surface/70 transition duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/50 hover:ring-1 hover:ring-accent/60 sm:w-[150px] lg:w-[205px]"
     >
-      <div className="relative h-[185px] w-full overflow-hidden bg-black/40 sm:h-[210px]">
+      <div className="relative h-[185px] w-full overflow-hidden bg-black/40 sm:h-[210px] lg:h-[290px]">
         {anime.poster ? (
           <img
             src={anime.poster}
