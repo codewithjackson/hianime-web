@@ -235,6 +235,45 @@ export function Header() {
   );
 }
 
+export function Mascot() {
+  const [hidden, setHidden] = useState(false);
+  useEffect(() => {
+    try {
+      if (localStorage.getItem('hianime-mascot') === 'hide') setHidden(true);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  if (hidden) return null;
+  function hide(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    setHidden(true);
+    try {
+      localStorage.setItem('hianime-mascot', 'hide');
+    } catch {
+      /* ignore */
+    }
+  }
+  return (
+    <Link
+      href="/random"
+      title="Surprise me — random anime"
+      className="mascot-float fixed bottom-5 right-5 z-40 hidden md:block"
+    >
+      <img src="/mascot.png" alt="Rimuru mascot" className="h-36 w-auto xl:h-44" />
+      <span
+        role="button"
+        aria-label="Hide mascot"
+        onClick={hide}
+        className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[10px] text-gray-300 hover:bg-white/20 hover:text-white"
+      >
+        ✕
+      </span>
+    </Link>
+  );
+}
+
 function MetaPills({ item }) {
   return (
     <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">

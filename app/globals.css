@@ -28,6 +28,21 @@ html.theater #watch-grid {
   grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
 }
 
+@keyframes mascot-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.mascot-float {
+  animation: mascot-float 4s ease-in-out infinite;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.6));
+}
+
 /* Large monitors: let the layout breathe instead of sitting
    in a narrow centered column with empty margins */
 @media (min-width: 1536px) {
