@@ -183,12 +183,12 @@ export function Header() {
       </header>
       {menuOpen ? (
         <div
-          className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-xl"
+          className="fixed inset-0 z-[60] bg-[#201f31]/60 backdrop-blur-2xl"
           onClick={() => setMenuOpen(false)}
         />
       ) : null}
       <aside
-        className={`fixed inset-y-0 left-0 z-[61] flex w-72 max-w-[85vw] flex-col bg-[#2b2a3f]/90 shadow-2xl backdrop-blur-xl transition-transform duration-300 ${
+        className={`fixed inset-y-0 left-0 z-[61] flex w-72 max-w-[85vw] flex-col bg-[#2b2a3f]/75 shadow-2xl backdrop-blur-2xl transition-transform duration-300 ${
           menuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
