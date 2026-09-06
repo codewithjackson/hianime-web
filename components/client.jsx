@@ -287,7 +287,14 @@ export function Mascot() {
   const [hidden, setHidden] = useState(false);
   useEffect(() => {
     try {
-      if (localStorage.getItem('hianime-mascot') === 'hide') setHidden(true);
+      // Dismissal lasts 24h, then Rimuru returns.
+      let at = Number(localStorage.getItem('hianime-mascot-hidden-at') || 0);
+      if (!at && localStorage.getItem('hianime-mascot') === 'hide') {
+        at = Date.now();
+        localStorage.setItem('hianime-mascot-hidden-at', String(at));
+        localStorage.removeItem('hianime-mascot');
+      }
+      if (at && Date.now() - at < 24 * 3600 * 1000) setHidden(true);
     } catch {
       /* ignore */
     }
@@ -298,7 +305,7 @@ export function Mascot() {
     e.stopPropagation();
     setHidden(true);
     try {
-      localStorage.setItem('hianime-mascot', 'hide');
+      localStorage.setItem('hianime-mascot-hidden-at', String(Date.now()));
     } catch {
       /* ignore */
     }
