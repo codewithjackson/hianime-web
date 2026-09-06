@@ -8,7 +8,7 @@ export async function generateMetadata({ params }) {
     const a = await api.anime(params.id);
     const desc = (a.synopsis || `Watch ${a.title} online free in HD.`).slice(0, 160);
     return {
-      title: `${a.title} — Watch Online | HiAnime`,
+      title: `${a.title} — Watch Online | Animaze`,
       description: desc,
       openGraph: {
         title: a.title,
@@ -17,7 +17,7 @@ export async function generateMetadata({ params }) {
       },
     };
   } catch {
-    return { title: 'Anime Details | HiAnime' };
+    return { title: 'Anime Details | Animaze' };
   }
 }
 
@@ -95,7 +95,7 @@ export default async function AnimePage({ params }) {
                 </div>
                 <p className="mt-3 max-w-3xl text-xs leading-relaxed text-gray-400">
                   Watch <strong className="text-gray-200">{a.title}</strong> SUB and DUB
-                  online free in HD on HiAnime.
+                  online free in HD on Animaze.
                   {a.studios?.length ? (
                     <> Find more <strong className="text-gray-200">{a.studios[0]}</strong> anime here.</>
                   ) : null}

@@ -5,7 +5,7 @@ import { api } from '../../lib/api';
 export async function generateMetadata({ searchParams }) {
   const q = searchParams.keyword ? ` — ${searchParams.keyword}` : '';
   return {
-    title: `Browse Anime${q} | HiAnime`,
+    title: `Browse Anime${q} | Animaze`,
     description: 'Search and filter anime by type, status, genre and more.',
   };
 }

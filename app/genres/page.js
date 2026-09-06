@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { api } from '../../lib/api';
 
 export const metadata = {
-  title: 'All Genres | HiAnime',
+  title: 'All Genres | Animaze',
   description: 'Browse all anime genres.',
 };
 

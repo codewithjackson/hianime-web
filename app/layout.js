@@ -4,7 +4,7 @@ import './globals.css';
 import { Header, Mascot } from '../components/client';
 
 export const metadata = {
-  title: 'HiAnime — Watch Anime Online',
+  title: 'Animaze — Watch Anime Online',
   description: 'Watch subbed and dubbed anime online.',
 };
 
@@ -43,7 +43,7 @@ export default function RootLayout({ children }) {
         <main className="min-h-screen pb-16">{children}</main>        <footer className="border-t border-white/5 bg-black/30">
           <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 md:grid-cols-3">
             <div>
-              <p className="text-xl font-black text-accent">HiAnime</p>
+              <p className="text-xl font-black text-accent">Animaze</p>
               <p className="mt-2 max-w-xs text-xs leading-relaxed text-gray-500">
                 Watch subbed and dubbed anime online. Demo frontend — all content
                 belongs to its original owners.
@@ -79,7 +79,7 @@ export default function RootLayout({ children }) {
             </div>
           </div>
           <p className="border-t border-white/5 py-4 text-center text-[11px] text-gray-600">
-            © HiAnime — for educational and personal use only.
+            © Animaze — for educational and personal use only.
           </p>
         </footer>
         <Mascot />

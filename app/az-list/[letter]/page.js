@@ -4,7 +4,7 @@ import { api } from '../../../lib/api';
 
 export async function generateMetadata({ params }) {
   return {
-    title: `A–Z List: ${String(params.letter).toUpperCase()} | HiAnime`,
+    title: `A–Z List: ${String(params.letter).toUpperCase()} | Animaze`,
     description: 'Browse anime alphabetically.',
   };
 }

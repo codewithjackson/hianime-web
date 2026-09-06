@@ -12,7 +12,7 @@ export async function generateMetadata({ params, searchParams }) {
     const epLabel = ep ? ` Episode ${ep.episodeNumber}` : '';
     const title = info?.title || params.id;
     return {
-      title: `Watch ${title}${epLabel} | HiAnime`,
+      title: `Watch ${title}${epLabel} | Animaze`,
       description: (info?.synopsis || `Watch ${title}${epLabel} online free in HD.`).slice(0, 160),
       openGraph: {
         title: `${title}${epLabel}`,
@@ -20,7 +20,7 @@ export async function generateMetadata({ params, searchParams }) {
       },
     };
   } catch {
-    return { title: 'Watch Anime | HiAnime' };
+    return { title: 'Watch Anime | Animaze' };
   }
 }
 

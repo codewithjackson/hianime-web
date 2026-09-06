@@ -4,7 +4,7 @@ import { api } from '../../../lib/api';
 export async function generateMetadata({ params }) {
   const label = params.id.replaceAll('-', ' ');
   return {
-    title: `${label} Anime | HiAnime`,
+    title: `${label} Anime | Animaze`,
     description: `Watch anime by ${label} online free in HD.`,
   };
 }

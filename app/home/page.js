@@ -37,7 +37,7 @@ export default async function HomePage() {
         ))}
       </Row>
 
-      <Row title="New on HiAnime" href="/explore/recently-added">
+      <Row title="New on Animaze" href="/explore/recently-added">
         {home.newAdded.map((a) => (
           <AnimeCard key={a.id} anime={a} />
         ))}

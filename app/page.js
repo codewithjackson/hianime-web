@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { api } from '../lib/api';
 
 export const metadata = {
-  title: 'HiAnime — Watch Anime Online Free in HD',
+  title: 'Animaze — Watch Anime Online Free in HD',
   description:
     'Watch subbed and dubbed anime online free in HD. No account needed — search thousands of titles and start watching.',
 };
@@ -83,19 +83,19 @@ export default async function LandingPage() {
       <div className="mx-auto max-w-4xl space-y-8 px-4 py-12 text-sm leading-relaxed text-gray-300">
         <section>
           <h1 className="text-xl font-bold text-white">
-            HiAnime — the best site to watch anime online for free
+            Animaze — the best site to watch anime online for free
           </h1>
           <p className="mt-3">
             Looking for one place to watch everything from timeless classics to
-            this season&apos;s simulcasts? HiAnime brings thousands of subbed and
+            this season&apos;s simulcasts? Animaze brings thousands of subbed and
             dubbed anime series and movies together in a fast, clean interface —
             no account, no fees, just press play.
           </p>
         </section>
         <section>
-          <h2 className="text-lg font-bold text-white">1/ What is HiAnime?</h2>
+          <h2 className="text-lg font-bold text-white">1/ What is Animaze?</h2>
           <p className="mt-2">
-            HiAnime is a free anime discovery and streaming front-end. Search any
+            Animaze is a free anime discovery and streaming front-end. Search any
             title, browse by genre or studio, keep a continue-watching list in
             your browser, and stream episodes in HD with subtitles or dubs where
             available.
