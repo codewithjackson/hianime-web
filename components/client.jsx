@@ -307,9 +307,9 @@ export function Mascot() {
     <Link
       href="/random"
       title="Surprise me — random anime"
-      className="mascot-float fixed bottom-5 right-5 z-40 hidden md:block"
+      className="mascot-float fixed bottom-5 right-5 z-40 block"
     >
-      <img src="/mascot.png" alt="Rimuru mascot" className="h-36 w-auto xl:h-44" />
+      <img src="/mascot.png" alt="Rimuru mascot" className="h-20 w-auto sm:h-28 md:h-36 xl:h-44" />
       <span
         role="button"
         aria-label="Hide mascot"
