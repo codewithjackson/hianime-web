@@ -18,8 +18,8 @@ const EXPLORE_LINKS = [
   ['TV Series', '/explore/tv'],
   ['Subbed Anime', '/explore/subbed-anime'],
   ['Dubbed Anime', '/explore/dubbed-anime'],
+  ['Filter', '/filter'],
 ];
-
 const GENRE_LINKS = [
   'action',
   'adventure',

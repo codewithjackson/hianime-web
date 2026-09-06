@@ -64,6 +64,7 @@ export function Header() {
     ['OVAs', '/explore/ova'],
     ['ONAs', '/explore/ona'],
     ['Specials', '/explore/special'],
+    ['Filter', '/filter'],
   ];
 
   return (
@@ -1000,5 +1001,132 @@ export function CastSection({ items }) {
         })}
       </div>
     </section>
+  );
+}
+
+const FILTER_DEFS = [
+  { name: 'type', label: 'Type', opts: ['all', 'tv', 'movie', 'ova', 'ona', 'special', 'music'] },
+  { name: 'status', label: 'Status', opts: ['all', 'completed', 'airing', 'not_yet_aired'] },
+  { name: 'rated', label: 'Rated', opts: ['all', 'g', 'pg', 'pg_13', 'r_17', 'r_plus', 'rx'] },
+  { name: 'score', label: 'Score', opts: ['all', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'] },
+  { name: 'season', label: 'Season', opts: ['all', 'spring', 'summer', 'fall', 'winter'] },
+  { name: 'language', label: 'Language', opts: ['all', 'sub', 'dub'] },
+  {
+    name: 'sort',
+    label: 'Sort',
+    opts: ['default', 'updated_date', 'added_date', 'release_date', 'trending', 'title_az', 'avg_score', 'mal_score'],
+  },
+];
+
+const YEARS = Array.from({ length: 68 }, (_, i) => String(2027 - i));
+const MONTHS = Array.from({ length: 12 }, (_, i) => String(i + 1));
+const DAYS = Array.from({ length: 31 }, (_, i) => String(i + 1));
+
+export function FilterForm({ genres, initial }) {
+  const router = useRouter();
+  const [genre, setGenre] = useState(initial.genres || '');
+
+  function onSubmit(e) {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const p = new URLSearchParams();
+    for (const [k, v] of fd.entries()) {
+      if (v && v !== 'all' && v !== 'default' && v !== '') p.set(k, v);
+    }
+    if (genre) p.set('genres', genre);
+    router.push(`/filter${p.toString() ? `?${p.toString()}` : ''}`);
+  }
+
+  function sel(name, label, opts, extra) {
+    return (
+      <label key={name} className="block rounded-xl bg-base px-3 py-2 ring-1 ring-white/10">
+        <span className="mb-1 block text-[11px] font-bold text-white">
+          {label} <span className="ml-1 font-medium text-accent">{extra}</span>
+        </span>
+        <select
+          name={name}
+          defaultValue={initial[name] || opts[0]}
+          className="w-full bg-transparent text-xs text-gray-300 outline-none [&>option]:bg-surface"
+        >
+          {opts.map((o) => (
+            <option key={o} value={o}>
+              {o.replaceAll('_', ' ')}
+            </option>
+          ))}
+        </select>
+      </label>
+    );
+  }
+
+  function dateSel(prefix, label) {
+    return (
+      <div className="rounded-xl bg-base px-3 py-2 ring-1 ring-white/10">
+        <p className="mb-1 text-[11px] font-bold text-white">{label}</p>
+        <div className="flex gap-1">
+          {[
+            [`${prefix}y`, YEARS, 'Year'],
+            [`${prefix}m`, MONTHS, 'Month'],
+            [`${prefix}d`, DAYS, 'Day'],
+          ].map(([n, opts, ph]) => (
+            <select
+              key={n}
+              name={n}
+              defaultValue={initial[n] || ''}
+              className="w-full bg-transparent text-xs text-accent outline-none [&>option]:bg-surface"
+            >
+              <option value="">{ph}</option>
+              {opts.map((o) => (
+                <option key={o} value={o}>
+                  {o}
+                </option>
+              ))}
+            </select>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={onSubmit} className="rounded-2xl bg-surface/50 p-4 ring-1 ring-white/5 sm:p-6">
+      <p className="mb-3 font-bold text-white">Filter</p>
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+        {FILTER_DEFS.map((f) => sel(f.name, f.label, f.opts))}
+        {dateSel('s', 'Start Date')}
+        {dateSel('e', 'End Date')}
+      </div>
+      <p className="mb-2 mt-5 font-bold text-white">Genre</p>
+      <div className="flex flex-wrap gap-1.5">
+        {(genres || []).map((g) => (
+          <button
+            key={g}
+            type="button"
+            onClick={() => setGenre((cur) => (cur === g ? '' : g))}
+            className={`rounded-lg border px-2.5 py-1 text-[11px] capitalize transition ${
+              genre === g
+                ? 'border-accent bg-accent font-bold text-black'
+                : 'border-white/15 text-gray-300 hover:border-accent/60 hover:text-white'
+            }`}
+          >
+            {g.replaceAll('-', ' ')}
+          </button>
+        ))}
+      </div>
+      <div className="mt-5 flex gap-2">
+        <button className="rounded-xl bg-accent px-8 py-2 text-sm font-bold text-black transition hover:brightness-110">
+          Filter
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setGenre('');
+            router.push('/filter');
+          }}
+          className="rounded-xl bg-white/10 px-6 py-2 text-sm text-gray-200 hover:bg-white/20"
+        >
+          Reset
+        </button>
+      </div>
+    </form>
   );
 }
