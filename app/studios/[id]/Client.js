@@ -1,14 +1,14 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Grid, Pagination } from '../../../components/ui';
+import { useRouteId } from '../../../components/client';
 import { api } from '../../../lib/api';
 
 function StudiosInner({ initialId }) {
-  const params = useParams();
   const searchParams = useSearchParams();
-  const id = params.id || initialId;
+  const id = useRouteId(initialId);
   const page = Number(searchParams.get('page')) || 1;
   const [data, setData] = useState(null);
   const [err, setErr] = useState('');

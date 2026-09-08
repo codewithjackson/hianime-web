@@ -2,8 +2,10 @@ import Link from 'next/link';
 import { HoverTip } from './client';
 
 export function AnimeCard({ anime, qtip = true, fluid = false }) {
+  // Plain <a>: static export can't client-navigate to IDs that weren't
+  // pre-rendered, so force a full load (host rewrite serves the shell).
   const card = (
-    <Link
+    <a
       href={`/anime/${anime.id}`}
       className={`group block shrink-0 snap-start overflow-hidden rounded-xl bg-surface/70 transition duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/50 hover:ring-1 hover:ring-accent/60 ${
         fluid ? 'w-full' : 'w-[132px] sm:w-[150px] lg:w-[205px]'
@@ -47,7 +49,7 @@ export function AnimeCard({ anime, qtip = true, fluid = false }) {
         </p>
         {anime.duration ? <p className="mt-1 text-[10px] text-gray-400">{anime.duration}</p> : null}
       </div>
-    </Link>
+    </a>
   );
   if (!qtip || !anime?.id) return card;
   return <HoverTip anime={anime}>{card}</HoverTip>;
@@ -89,23 +91,23 @@ export function Pagination({ page, totalPages, makeHref }) {
   return (
     <div className="mt-6 flex items-center justify-center gap-2">
       {page > 1 ? (
-        <Link
+        <a
           href={makeHref(page - 1)}
           className="rounded bg-surface px-3 py-1 text-sm hover:bg-accent hover:text-black"
         >
           Prev
-        </Link>
+        </a>
       ) : null}
       <span className="text-sm text-gray-300">
         Page {page} of {totalPages}
       </span>
       {page < totalPages ? (
-        <Link
+        <a
           href={makeHref(page + 1)}
           className="rounded bg-surface px-3 py-1 text-sm hover:bg-accent hover:text-black"
         >
           Next
-        </Link>
+        </a>
       ) : null}
     </div>
   );

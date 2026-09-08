@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Grid, Pagination } from '../../../components/ui';
+import { useRouteId } from '../../../components/client';
 import { api } from '../../../lib/api';
 
 const TITLES = {
@@ -25,9 +25,8 @@ const TITLES = {
 };
 
 function ExploreInner({ initialQuery }) {
-  const params = useParams();
   const searchParams = useSearchParams();
-  const query = params.query || initialQuery;
+  const query = useRouteId(initialQuery);
   const page = Number(searchParams.get('page')) || 1;
   const [data, setData] = useState(null);
   const [err, setErr] = useState('');

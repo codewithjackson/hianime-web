@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 
@@ -26,7 +25,7 @@ export default function GenresPage() {
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {genres.map((g) => (
-            <Link
+            <a
               key={g}
               href={`/genre/${g}`}
               className="group rounded-2xl bg-surface/70 p-4 capitalize ring-1 ring-white/5 transition hover:bg-surface hover:ring-accent/60"
@@ -35,7 +34,7 @@ export default function GenresPage() {
                 {g.replaceAll('-', ' ')}
               </p>
               <p className="mt-1 text-[11px] text-gray-500">Browse titles →</p>
-            </Link>
+            </a>
           ))}
         </div>
       )}

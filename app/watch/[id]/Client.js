@@ -2,14 +2,13 @@
 
 import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
-import { EpisodeList, RememberProgress, DownloadBox, AutoNext, TheaterToggle } from '../../../components/client';
+import { useSearchParams } from 'next/navigation';
+import { EpisodeList, RememberProgress, DownloadBox, AutoNext, TheaterToggle, useRouteId } from '../../../components/client';
 import { api } from '../../../lib/api';
 
 function WatchInner({ initialId }) {
-  const params = useParams();
   const searchParams = useSearchParams();
-  const id = params.id || initialId;
+  const id = useRouteId(initialId);
   const epParam = searchParams.get('ep');
   const type = searchParams.get('type') === 'dub' ? 'dub' : 'sub';
   const serverParam = searchParams.get('server');
@@ -156,7 +155,7 @@ function WatchInner({ initialId }) {
                 {type} servers:
               </span>
               {['sub', 'dub'].map((t) => (
-                <Link
+                <a
                   key={t}
                   href={`/watch/${id}?ep=${currentEp}&type=${t}`}
                   className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase transition ${
@@ -164,14 +163,14 @@ function WatchInner({ initialId }) {
                   }`}
                 >
                   {t}
-                </Link>
+                </a>
               ))}
               <span className="mx-1 h-4 w-px bg-white/10" />
               {track.map((s) => {
                 const active =
                   serverParam === s.name || (!serverParam && stream?.server === s.name);
                 return (
-                  <Link
+                  <a
                     key={s.name}
                     href={`/watch/${id}?ep=${currentEp}&type=${type}&server=${s.name}`}
                     className={`rounded-full px-4 py-1.5 text-xs font-medium transition ${
@@ -179,7 +178,7 @@ function WatchInner({ initialId }) {
                     }`}
                   >
                     {s.name}
-                  </Link>
+                  </a>
                 );
               })}
             </div>
@@ -188,20 +187,20 @@ function WatchInner({ initialId }) {
             </p>
             <div className="mt-3 flex gap-2">
               {prevEp ? (
-                <Link
+                <a
                   href={`/watch/${id}?ep=${prevEp.id}&type=${type}`}
                   className="rounded-full bg-white/10 px-5 py-1.5 text-xs font-bold text-gray-200 transition hover:bg-white/20"
                 >
                   ← Ep {prevEp.episodeNumber}
-                </Link>
+                </a>
               ) : null}
               {nextEp ? (
-                <Link
+                <a
                   href={`/watch/${id}?ep=${nextEp.id}&type=${type}`}
                   className="rounded-full bg-white/10 px-5 py-1.5 text-xs font-bold text-gray-200 transition hover:bg-white/20"
                 >
                   Ep {nextEp.episodeNumber} →
-                </Link>
+                </a>
               ) : null}
             </div>
           </div>
@@ -211,18 +210,18 @@ function WatchInner({ initialId }) {
 
         <div className="flex gap-4 lg:col-span-1 lg:flex-col">
           {info?.poster ? (
-            <Link href={`/anime/${id}`} className="hidden shrink-0 lg:block">
+            <a href={`/anime/${id}`} className="hidden shrink-0 lg:block">
               <img
                 src={info.poster}
                 alt={info.title}
                 className="w-32 rounded-xl object-cover ring-1 ring-white/10"
               />
-            </Link>
+            </a>
           ) : null}
           <div className="min-w-0 flex-1">
-            <Link href={`/anime/${id}`} className="hover:text-accent">
+            <a href={`/anime/${id}`} className="hover:text-accent">
               <h1 className="truncate text-lg font-bold text-white">{info?.title || 'Episodes'}</h1>
-            </Link>
+            </a>
             <div className="mt-2">
               <EpisodeList
                 animeId={id}

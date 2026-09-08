@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { AnimeCard, Row } from '../../components/ui';
 import { Spotlight, TopTen, Trending, ContinueWatching, Schedule } from '../../components/client';
@@ -79,13 +78,13 @@ export default function HomePage() {
         <h2 className="mb-3 text-xl font-bold text-accent">Genres</h2>
         <div className="flex flex-wrap gap-2">
           {(home.genres || []).slice(0, 40).map((g) => (
-            <Link
+            <a
               key={g}
               href={`/genre/${g}`}
               className="rounded-full bg-surface px-3 py-1 text-xs capitalize hover:bg-accent hover:text-black"
             >
               {g.replaceAll('-', ' ')}
-            </Link>
+            </a>
           ))}
         </div>
       </section>

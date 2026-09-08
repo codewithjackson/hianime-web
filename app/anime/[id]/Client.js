@@ -1,10 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { AnimeCard } from '../../../components/ui';
-import { Synopsis, CastSection } from '../../../components/client';
+import { Synopsis, CastSection, useRouteId } from '../../../components/client';
 import { api } from '../../../lib/api';
 
 function Badge({ children, className }) {
@@ -16,8 +15,7 @@ function Badge({ children, className }) {
 }
 
 export default function AnimeClient({ initialId }) {
-  const params = useParams();
-  const id = params.id || initialId;
+  const id = useRouteId(initialId);
   const [a, setA] = useState(null);
   const [err, setErr] = useState('');
 
@@ -95,12 +93,12 @@ export default function AnimeClient({ initialId }) {
                   {a.duration ? <span>• {a.duration}</span> : null}
                 </div>
                 <div className="mt-4">
-                  <Link
+                  <a
                     href={`/watch/${a.id}`}
                     className="rounded-full bg-accent px-7 py-2.5 text-sm font-bold text-black transition hover:brightness-110"
                   >
                     ▶ Watch now
-                  </Link>
+                  </a>
                 </div>
                 <div className="mt-4">
                   <Synopsis text={a.synopsis} />
@@ -160,13 +158,13 @@ export default function AnimeClient({ initialId }) {
                   <p className="mb-2 font-bold text-white">Genres:</p>
                   <div className="flex flex-wrap gap-1.5">
                     {a.genres.map((g) => (
-                      <Link
+                      <a
                         key={g}
                         href={`/genre/${String(g).toLowerCase().replaceAll(' ', '-')}`}
                         className="rounded-full border border-white/25 px-2.5 py-0.5 text-[11px] text-gray-200 transition hover:border-accent hover:text-accent"
                       >
                         {g}
-                      </Link>
+                      </a>
                     ))}
                   </div>
                 </div>
@@ -176,12 +174,12 @@ export default function AnimeClient({ initialId }) {
                   <span className="font-bold text-white">Studios: </span>
                   {a.studios.map((s, i) => (
                     <span key={s}>
-                      <Link
+                      <a
                         href={`/studios/${String(s).toLowerCase().replaceAll(' ', '-')}`}
                         className="text-gray-200 hover:text-accent"
                       >
                         {s}
-                      </Link>
+                      </a>
                       {i < a.studios.length - 1 ? ', ' : ''}
                     </span>
                   ))}
@@ -214,7 +212,7 @@ export default function AnimeClient({ initialId }) {
                 <ol className="space-y-1">
                   {a.mostPopular.slice(0, 7).map((p) => (
                     <li key={p.id}>
-                      <Link
+                      <a
                         href={`/anime/${p.id}`}
                         className="group flex items-center gap-3 rounded-xl p-2 transition hover:bg-surface"
                       >
@@ -239,7 +237,7 @@ export default function AnimeClient({ initialId }) {
                             {p.type ? <span>• {p.type}</span> : null}
                           </p>
                         </div>
-                      </Link>
+                      </a>
                     </li>
                   ))}
                 </ol>

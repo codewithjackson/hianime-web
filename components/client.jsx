@@ -1,9 +1,26 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { apiUrl } from '../lib/api';
+
+// Resolve a dynamic route segment from the live URL first.
+// Static hosting serves one placeholder shell for infinite IDs via rewrite,
+// so useParams()/baked props can report the placeholder — window.location never lies.
+export function useRouteId(fallback, position = 1) {
+  const params = useParams();
+  const [live, setLive] = useState(null);
+  useEffect(() => {
+    try {
+      setLive(window.location.pathname.split('/').filter(Boolean)[position] || null);
+    } catch {
+      setLive(null);
+    }
+  }, [position]);
+  const fromParams = params.id || params.query || params.genre || params.letter || null;
+  return live || fromParams || fallback;
+}
 
 export function Header() {
   const router = useRouter();
@@ -481,7 +498,7 @@ export function Trending({ items }) {
       </div>
       <div ref={rowRef} className="no-scrollbar flex snap-x snap-proximity gap-3 overflow-x-auto pb-2 sm:gap-4">
         {items.map((a, n) => (
-          <Link key={a.id} href={`/anime/${a.id}`} className="group flex shrink-0 snap-start items-end gap-1.5">
+          <a key={a.id} href={`/anime/${a.id}`} className="group flex shrink-0 snap-start items-end gap-1.5">
             <span className="text-4xl font-black leading-none text-white/15 transition group-hover:text-accent/60 sm:text-5xl">
               {String(n + 1).padStart(2, '0')}
             </span>
@@ -500,7 +517,7 @@ export function Trending({ items }) {
                 {a.title}
               </p>
             </div>
-          </Link>
+          </a>
         ))}
       </div>
     </section>
@@ -533,7 +550,7 @@ export function EpisodeList({ animeId, episodes, currentEp, type }) {
         {filtered.map((e) => {
           const active = String(e.id) === String(currentEp);
           return (
-            <Link
+            <a
               key={e.id}
               href={`/watch/${animeId}?ep=${e.id}&type=${type}`}
               title={e.title}
@@ -544,7 +561,7 @@ export function EpisodeList({ animeId, episodes, currentEp, type }) {
               }`}
             >
               {e.episodeNumber}
-            </Link>
+            </a>
           );
         })}
         {q.trim() && !filtered.length ? (
@@ -579,7 +596,7 @@ export function TopTen({ data }) {
       <ol className="grid gap-2 md:grid-cols-2">
         {list.slice(0, 10).map((a, n) => (
           <li key={a.id} className="min-w-0">
-            <Link
+            <a
               href={`/anime/${a.id}`}
               className="group flex items-center gap-3 rounded-xl bg-surface/70 p-2.5 transition hover:bg-surface hover:ring-1 hover:ring-accent/60"
             >
@@ -601,7 +618,7 @@ export function TopTen({ data }) {
                     .join(' • ')}
                 </p>
               </div>
-            </Link>
+            </a>
           </li>
         ))}
       </ol>
@@ -871,7 +888,7 @@ export function ContinueWatching() {
       </h2>
       <div className="no-scrollbar flex snap-x snap-proximity gap-3 overflow-x-auto pb-2">
         {list.map((x) => (
-          <Link
+          <a
             key={x.animeId}
             href={`/watch/${x.animeId}?ep=${x.ep}&type=${x.type || 'sub'}`}
             className="group w-[220px] shrink-0 snap-start overflow-hidden rounded-xl bg-surface/70 transition hover:ring-1 hover:ring-accent/60"
@@ -888,7 +905,7 @@ export function ContinueWatching() {
                 <p className="mt-2 text-[11px] font-bold text-gray-400">▶ Resume</p>
               </div>
             </div>
-          </Link>
+          </a>
         ))}
       </div>
     </section>
@@ -968,7 +985,7 @@ export function Schedule() {
             <ul className="divide-y divide-white/5">
               {(expanded ? items : items.slice(0, PAGE_SIZE)).map((it) => (
                 <li key={`${it.id}-${it.episode}`}>
-                  <Link
+                  <a
                     href={`/anime/${it.id}`}
                     className="flex items-center gap-4 px-4 py-2.5 transition hover:bg-white/5"
                   >
@@ -977,7 +994,7 @@ export function Schedule() {
                     {it.episode ? (
                       <span className="shrink-0 text-xs text-gray-400">▸ Episode {it.episode}</span>
                     ) : null}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>
@@ -1333,12 +1350,12 @@ export function HoverTip({ anime, children }) {
               </p>
             ) : null}
           </div>
-          <Link
+          <a
             href={`/watch/${anime.id}`}
             className="mt-3 flex items-center justify-center gap-1.5 rounded-full bg-accent py-2 text-xs font-bold text-black transition hover:brightness-110"
           >
             ▶ Watch now
-          </Link>
+          </a>
         </div>
       ) : null}
     </div>
@@ -1350,7 +1367,7 @@ export function SuggestList({ items, query, detailed, onPick }) {
   return (
     <div>
       {items.map((s) => (
-        <Link
+        <a
           key={s.id}
           href={`/anime/${s.id}`}
           onClick={onPick}
@@ -1365,7 +1382,7 @@ export function SuggestList({ items, query, detailed, onPick }) {
               <span className="mt-0.5 block truncate text-[11px] text-gray-400">{s.aired}</span>
             ) : null}
           </span>
-        </Link>
+        </a>
       ))}
       {query?.trim() ? (
         <Link

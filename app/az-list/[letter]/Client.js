@@ -2,16 +2,16 @@
 
 import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Grid, Pagination } from '../../../components/ui';
+import { useRouteId } from '../../../components/client';
 import { api } from '../../../lib/api';
 
 const LETTERS = ['all', '0-9', ...'abcdefghijklmnopqrstuvwxyz'.split('')];
 
 function AzListInner({ initialLetter }) {
-  const params = useParams();
   const searchParams = useSearchParams();
-  const letter = params.letter || initialLetter;
+  const letter = useRouteId(initialLetter);
   const page = Number(searchParams.get('page')) || 1;
   const [data, setData] = useState(null);
   const [err, setErr] = useState('');
