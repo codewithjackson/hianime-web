@@ -1,0 +1,7 @@
+# SPA fallback for infinite dynamic routes on static hosts (Cloudflare Pages / Netlify).
+# Pre-rendered pages serve directly; unknown IDs fall back to the placeholder shell,
+# which then reads the real ID from the URL client-side.
+/anime/*  /anime/placeholder.html  200
+/watch/*  /watch/placeholder.html  200
+/studios/*  /studios/toei-animation.html  200
+/genre/*  /genre/action.html  200

@@ -1,14 +1,10 @@
+'use client';
+
 import Link from 'next/link';
+import { Suspense, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Grid, Pagination } from '../../components/ui';
 import { api } from '../../lib/api';
-
-export async function generateMetadata({ searchParams }) {
-  const q = searchParams.keyword ? ` — ${searchParams.keyword}` : '';
-  return {
-    title: `Browse Anime${q} | Animaze`,
-    description: 'Search and filter anime by type, status, genre and more.',
-  };
-}
 
 const FILTERS = {
   type: ['all', 'tv', 'movie', 'ova', 'ona', 'special', 'music'],
@@ -19,29 +15,45 @@ const FILTERS = {
   sort: ['default', 'updated_date', 'added_date', 'release_date', 'trending', 'title_az', 'avg_score', 'mal_score'],
 };
 
-function qs(searchParams, page) {
+function qsFromParams(sp, page) {
   const p = new URLSearchParams();
-  if (searchParams.keyword) p.set('keyword', searchParams.keyword);
+  const keyword = sp.get('keyword');
+  if (keyword) p.set('keyword', keyword);
   for (const k of Object.keys(FILTERS)) {
-    if (searchParams[k]) p.set(k, searchParams[k]);
+    const v = sp.get(k);
+    if (v) p.set(k, v);
   }
   p.set('page', String(page));
   return p.toString();
 }
 
-export default async function BrowsePage({ searchParams }) {
-  const page = Number(searchParams.page) || 1;
-  const hasFilter = searchParams.keyword || Object.keys(FILTERS).some((k) => searchParams[k]);
-  const data = hasFilter
-    ? await api.filter(qs(searchParams, 1).replace(/&page=\d+$/, ''), page)
-    : await api.explore('top-airing', page);
+function BrowseInner() {
+  const sp = useSearchParams();
+  const keyword = sp.get('keyword') || '';
+  const page = Number(sp.get('page')) || 1;
+  const filterKey = sp.toString();
+  const [data, setData] = useState(null);
+  const [err, setErr] = useState('');
+
+  useEffect(() => {
+    setData(null);
+    setErr('');
+    const hasFilter = keyword || Object.keys(FILTERS).some((k) => sp.get(k));
+    const p = hasFilter
+      ? api.filter(qsFromParams(sp, 1).replace(/&page=\d+$/, ''), page)
+      : api.explore('top-airing', page);
+    p.then(setData).catch((e) => setErr(String(e?.message || e)));
+  }, [filterKey, page]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const current = {};
+  for (const k of Object.keys(FILTERS)) current[k] = sp.get(k) || 'all';
 
   return (
     <div className="mx-auto max-w-7xl px-4 pt-6">
       <h1 className="mb-4 flex items-center gap-2 text-2xl font-bold text-white">
         <span className="h-6 w-1 rounded bg-accent" />
-        {searchParams.keyword ? (
-          <>Results for &ldquo;{searchParams.keyword}&rdquo;</>
+        {keyword ? (
+          <>Results for &ldquo;{keyword}&rdquo;</>
         ) : (
           'Browse Anime'
         )}
@@ -54,8 +66,8 @@ export default async function BrowsePage({ searchParams }) {
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
           <input
             name="keyword"
-            key={`kw-${searchParams.keyword || ''}`}
-            defaultValue={searchParams.keyword || ''}
+            key={`kw-${keyword}`}
+            defaultValue={keyword}
             placeholder="Keyword..."
             className="col-span-2 rounded-xl bg-base px-3 py-2 text-sm outline-none ring-1 ring-white/10 placeholder:text-gray-500 focus:ring-2 focus:ring-accent md:col-span-1"
           />
@@ -66,8 +78,8 @@ export default async function BrowsePage({ searchParams }) {
               </span>
             <select
               name={name}
-              key={`${name}-${searchParams[name] || 'all'}`}
-              defaultValue={searchParams[name] || opts[0]}
+              key={`${name}-${current[name]}`}
+              defaultValue={current[name]}
                 className="w-full rounded-xl bg-base px-3 py-2 text-sm capitalize outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-accent"
               >
                 {opts.map((o) => (
@@ -91,17 +103,37 @@ export default async function BrowsePage({ searchParams }) {
           </Link>
         </div>
       </form>
-      <p className="mb-3 text-xs text-gray-500">
-        {data.pageInfo.totalPages > 1
-          ? `Page ${data.pageInfo.currentPage} of ${data.pageInfo.totalPages}`
-          : `${data.response.length} titles`}
-      </p>
-      <Grid items={data.response} />
-      <Pagination
-        page={data.pageInfo.currentPage}
-        totalPages={data.pageInfo.totalPages}
-        makeHref={(p) => `/browse?${qs(searchParams, p)}`}
-      />
+      {err ? <p className="text-sm text-gray-400">Failed to load: {err}</p> : null}
+      {!data && !err ? (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} className="h-52 animate-pulse rounded-xl bg-white/5" />
+          ))}
+        </div>
+      ) : null}
+      {data ? (
+        <>
+          <p className="mb-3 text-xs text-gray-500">
+            {data.pageInfo.totalPages > 1
+              ? `Page ${data.pageInfo.currentPage} of ${data.pageInfo.totalPages}`
+              : `${data.response.length} titles`}
+          </p>
+          <Grid items={data.response} />
+          <Pagination
+            page={data.pageInfo.currentPage}
+            totalPages={data.pageInfo.totalPages}
+            makeHref={(p) => `/browse?${qsFromParams(sp, p)}`}
+          />
+        </>
+      ) : null}
     </div>
+  );
+}
+
+export default function BrowsePage() {
+  return (
+    <Suspense>
+      <BrowseInner />
+    </Suspense>
   );
 }

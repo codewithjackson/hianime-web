@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 import { Header, Mascot } from '../components/client';
 
@@ -83,7 +82,6 @@ export default function RootLayout({ children }) {
           </p>
         </footer>
         <Mascot />
-        <Analytics />
       </body>
     </html>
   );

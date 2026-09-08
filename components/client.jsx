@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { API_BASE } from '../lib/api';
 
 export function Header() {
   const router = useRouter();
@@ -13,7 +14,7 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileSearch, setMobileSearch] = useState(false);
   const timer = useRef(null);
-  const base = '/api/proxy';
+  const base = API_BASE;
 
   function clearSearch() {
     setQ('');
@@ -742,8 +743,8 @@ export function TheaterToggle() {
 
 export function DownloadBox({ episodeId, type }) {
   const [state, setState] = useState({ loading: false, data: null, err: '' });
-  // Same-origin proxy keeps the API key server-side.
-  const base = '/api/proxy';
+  // Static build: call the public API directly, no same-origin proxy.
+  const base = API_BASE;
 
   async function load() {
     setState({ loading: true, data: null, err: '' });
@@ -930,7 +931,7 @@ export function Schedule() {
     if (!sel) return;
     setLoading(true);
     setExpanded(false);
-    fetch(`/api/proxy/schedule?date=${sel}`)
+    fetch(`${API_BASE}/schedule?date=${sel}`)
       .then((r) => r.json())
       .then((j) => setItems(j.data?.items || []))
       .catch(() => setItems([]))
@@ -1238,7 +1239,7 @@ export function HoverTip({ anime, children }) {
       try {
         abortRef.current?.abort();
         abortRef.current = new AbortController();
-        const res = await fetch(`/api/proxy/anime/${anime.id}`, {
+        const res = await fetch(`${API_BASE}/anime/${anime.id}`, {
           signal: abortRef.current.signal,
         });
         const json = await res.json();

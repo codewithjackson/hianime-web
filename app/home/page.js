@@ -1,10 +1,38 @@
+'use client';
+
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { AnimeCard, Row } from '../../components/ui';
 import { Spotlight, TopTen, Trending, ContinueWatching, Schedule } from '../../components/client';
 import { api } from '../../lib/api';
 
-export default async function HomePage() {
-  const home = await api.home();
+export default function HomePage() {
+  const [home, setHome] = useState(null);
+  const [err, setErr] = useState('');
+
+  useEffect(() => {
+    api.home().then(setHome).catch((e) => setErr(String(e?.message || e)));
+  }, []);
+
+  if (err) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 pt-20 text-center text-sm text-gray-400">
+        <p>Failed to load home feed: {err}</p>
+        <p className="mt-2 text-xs">Check NEXT_PUBLIC_API_URL.</p>
+      </div>
+    );
+  }
+
+  if (!home) {
+    return (
+      <div className="mx-auto max-w-7xl space-y-4 px-4 pt-6">
+        <div className="h-64 animate-pulse rounded-2xl bg-white/5" />
+        <div className="h-40 animate-pulse rounded-2xl bg-white/5" />
+        <div className="h-40 animate-pulse rounded-2xl bg-white/5" />
+      </div>
+    );
+  }
+
   return (
     <>
       <Spotlight items={home.spotlight} />

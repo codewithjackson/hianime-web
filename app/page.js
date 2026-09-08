@@ -1,14 +1,16 @@
+'use client';
+
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 
-export const metadata = {
-  title: 'Animaze — Watch Anime Online Free in HD',
-  description:
-    'Watch subbed and dubbed anime online free in HD. No account needed — search thousands of titles and start watching.',
-};
+export default function LandingPage() {
+  const [home, setHome] = useState(null);
 
-export default async function LandingPage() {
-  const home = await api.home().catch(() => null);
+  useEffect(() => {
+    api.home().then(setHome).catch(() => setHome(null));
+  }, []);
+
   const top = (home?.topTen?.today || []).slice(0, 10);
   const posters = (home?.trending || []).slice(0, 5);
 

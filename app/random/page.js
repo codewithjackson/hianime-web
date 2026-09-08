@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { API_BASE } from '../../lib/api';
 
 export default function RandomPage() {
   const [err, setErr] = useState('');
   useEffect(() => {
-    // Same-origin proxy keeps the API key server-side.
-    fetch(`/api/proxy/anime/random`)
+    fetch(`${API_BASE}/anime/random`)
       .then((r) => {
         if (!r.ok) throw new Error(`API ${r.status}`);
         return r.json();
