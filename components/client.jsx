@@ -550,21 +550,27 @@ export function EpisodeList({ animeId, episodes, currentEp, type }) {
           className="ml-auto w-32 rounded-lg bg-white/10 px-3 py-1.5 text-xs outline-none placeholder:text-gray-500 focus:ring-2 focus:ring-accent"
         />
       </div>
-      <div className="grid max-h-[420px] grid-cols-4 gap-2 overflow-y-auto rounded-2xl bg-surface/50 p-3 sm:grid-cols-6 md:grid-cols-8">
+      <div className="max-h-[420px] space-y-1 overflow-y-auto rounded-2xl bg-surface/50 p-2 lg:max-h-[72vh]">
         {filtered.map((e) => {
           const active = String(e.id) === String(currentEp);
           return (
             <a
               key={e.id}
               href={`/watch/${animeId}?ep=${e.id}&type=${type}`}
-              title={e.title}
-              className={`rounded-lg px-2 py-2 text-center text-xs font-medium transition ${
+              title={e.title || `Episode ${e.episodeNumber}`}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
                 active
                   ? 'bg-accent font-bold text-black shadow-lg shadow-accent/30'
-                  : 'bg-white/5 text-gray-200 hover:bg-accent/80 hover:text-black'
+                  : 'bg-white/5 text-gray-200 hover:bg-white/10'
               }`}
             >
-              {e.episodeNumber}
+              <span className={`w-7 shrink-0 text-center font-black ${active ? 'text-black' : 'text-accent'}`}>
+                {e.episodeNumber}
+              </span>
+              <span className="min-w-0 flex-1 truncate">
+                {e.title || `Episode ${e.episodeNumber}`}
+              </span>
+              {active ? <span aria-hidden="true">▶</span> : null}
             </a>
           );
         })}

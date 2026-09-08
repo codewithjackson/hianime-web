@@ -23,9 +23,12 @@ body {
   scrollbar-width: none;
 }
 
-/* Theater mode: full-width player, episodes flow below */
+/* Theater mode: full-width player, side columns flow below */
 html.theater #watch-grid {
   grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+}
+html.theater #watch-grid > * {
+  grid-column: 1 / -1 !important;
 }
 
 @keyframes mascot-float {

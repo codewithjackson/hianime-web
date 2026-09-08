@@ -104,8 +104,21 @@ function WatchInner({ initialId }) {
         <span className="text-gray-300">Episode {epNum ?? ''}</span>
       </nav>
 
-      <div id="watch-grid" className="grid min-w-0 gap-4 lg:grid-cols-3">
-        <div className="min-w-0 lg:col-span-2">
+      <p className="mb-3 text-center text-sm text-gray-300">
+        You are watching <strong className="text-accent">Episode {epNum ?? ''}</strong>
+      </p>
+
+      <div id="watch-grid" className="flex min-w-0 flex-col gap-4 lg:grid lg:grid-cols-[260px_minmax(0,1fr)_280px]">
+        <aside className="order-2 min-w-0 lg:order-none lg:col-start-1">
+          <EpisodeList
+            animeId={id}
+            episodes={episodes}
+            currentEp={currentEp}
+            type={type}
+          />
+        </aside>
+
+        <div className="order-1 min-w-0 lg:order-none lg:col-start-2">
           {schedule?.airDate ? (
             <div className="mb-3 flex items-center gap-2 rounded-2xl bg-accent/10 px-4 py-2.5 text-xs text-gray-200 ring-1 ring-accent/30">
               <span>🚀</span>
@@ -226,30 +239,50 @@ function WatchInner({ initialId }) {
           <DownloadBox episodeId={currentEp} type={type} />
         </div>
 
-        <div className="flex min-w-0 gap-4 lg:col-span-1 lg:flex-col">
-          {info?.poster ? (
-            <a href={`/anime/${id}`} className="hidden shrink-0 lg:block">
-              <img
-                src={info.poster}
-                alt={info.title}
-                className="w-32 rounded-xl object-cover ring-1 ring-white/10"
-              />
-            </a>
-          ) : null}
-          <div className="min-w-0 flex-1">
+        <aside className="order-3 min-w-0 lg:order-none lg:col-start-3">
+          <div className="rounded-2xl bg-surface/50 p-4 ring-1 ring-white/5">
+            {info?.poster ? (
+              <a href={`/anime/${id}`} className="block">
+                <img
+                  src={info.poster}
+                  alt={info.title}
+                  className="hidden w-full rounded-xl object-cover ring-1 ring-white/10 lg:block"
+                />
+              </a>
+            ) : null}
             <a href={`/anime/${id}`} className="hover:text-accent">
-              <h1 className="truncate text-lg font-bold text-white">{info?.title || 'Episodes'}</h1>
+              <h1 className="mt-1 text-lg font-bold text-white lg:mt-3">{info?.title || 'Episodes'}</h1>
             </a>
-            <div className="mt-2">
-              <EpisodeList
-                animeId={id}
-                episodes={episodes}
-                currentEp={currentEp}
-                type={type}
-              />
+            <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
+              {info?.rating ? (
+                <span className="rounded bg-white px-1 font-bold text-black">{info.rating}</span>
+              ) : null}
+              <span className="rounded bg-accent px-1.5 font-bold text-black">HD</span>
+              {typeof info?.episodes?.sub === 'number' ? (
+                <span className="rounded bg-green-500/20 px-1 font-bold text-green-300">
+                  CC {info.episodes.sub}
+                </span>
+              ) : null}
+              {typeof info?.episodes?.dub === 'number' ? (
+                <span className="rounded bg-sky-500/20 px-1 font-bold text-sky-300">
+                  🎙 {info.episodes.dub}
+                </span>
+              ) : null}
+              {info?.type ? <span className="text-gray-400">• {info.type}</span> : null}
             </div>
+            {info?.synopsis ? (
+              <p className="mt-2 line-clamp-4 text-xs leading-relaxed text-gray-400">
+                {info.synopsis}
+              </p>
+            ) : null}
+            <a
+              href={`/anime/${id}`}
+              className="mt-3 inline-block rounded-full bg-white/10 px-5 py-1.5 text-xs font-bold text-gray-200 transition hover:bg-white/20"
+            >
+              View detail →
+            </a>
           </div>
-        </div>
+        </aside>
       </div>
     </div>
   );
