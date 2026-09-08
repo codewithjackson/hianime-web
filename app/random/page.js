@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { API_BASE } from '../../lib/api';
+import { apiUrl } from '../../lib/api';
 
 export default function RandomPage() {
   const [err, setErr] = useState('');
   useEffect(() => {
-    fetch(`${API_BASE}/anime/random`)
+    fetch(apiUrl('/anime/random'))
       .then((r) => {
         if (!r.ok) throw new Error(`API ${r.status}`);
         return r.json();

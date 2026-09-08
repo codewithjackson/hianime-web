@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { API_BASE } from '../lib/api';
+import { apiUrl } from '../lib/api';
 
 export function Header() {
   const router = useRouter();
@@ -14,7 +14,6 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileSearch, setMobileSearch] = useState(false);
   const timer = useRef(null);
-  const base = API_BASE;
 
   function clearSearch() {
     setQ('');
@@ -31,11 +30,11 @@ export function Header() {
   }, []);
 
   useEffect(() => {
-    fetch(`${base}/meta`)
+    fetch(apiUrl('/meta'))
       .then((r) => r.json())
       .then((j) => setGenres(j.data?.genres || []))
       .catch(() => setGenres([]));
-  }, [base]);
+  }, []);
 
   useEffect(() => {
     if (!q.trim()) {
@@ -45,7 +44,7 @@ export function Header() {
     clearTimeout(timer.current);
     timer.current = setTimeout(async () => {
       try {
-        const res = await fetch(`${base}/suggestion?keyword=${encodeURIComponent(q)}`);
+        const res = await fetch(apiUrl(`/suggestion?keyword=${encodeURIComponent(q)}`));
         const json = await res.json();
         setSuggest((json.data || []).slice(0, 6));
       } catch {
@@ -53,7 +52,7 @@ export function Header() {
       }
     }, 350);
     return () => clearTimeout(timer.current);
-  }, [q, base]);
+  }, [q]);
 
   const MENU_LINKS = [
     ['Home', '/home'],
@@ -743,13 +742,11 @@ export function TheaterToggle() {
 
 export function DownloadBox({ episodeId, type }) {
   const [state, setState] = useState({ loading: false, data: null, err: '' });
-  // Static build: call the public API directly, no same-origin proxy.
-  const base = API_BASE;
 
   async function load() {
     setState({ loading: true, data: null, err: '' });
     try {
-      const res = await fetch(`${base}/download?id=${encodeURIComponent(episodeId)}&type=${type}`);
+      const res = await fetch(apiUrl(`/download?id=${encodeURIComponent(episodeId)}&type=${type}`));
       const json = await res.json();
       if (!res.ok || !json.data?.m3u8) throw new Error(json.message || `API ${res.status}`);
       setState({ loading: false, data: json.data, err: '' });
@@ -931,7 +928,7 @@ export function Schedule() {
     if (!sel) return;
     setLoading(true);
     setExpanded(false);
-    fetch(`${API_BASE}/schedule?date=${sel}`)
+    fetch(apiUrl(`/schedule?date=${sel}`))
       .then((r) => r.json())
       .then((j) => setItems(j.data?.items || []))
       .catch(() => setItems([]))
@@ -1239,7 +1236,7 @@ export function HoverTip({ anime, children }) {
       try {
         abortRef.current?.abort();
         abortRef.current = new AbortController();
-        const res = await fetch(`${API_BASE}/anime/${anime.id}`, {
+        const res = await fetch(apiUrl(`/anime/${anime.id}`), {
           signal: abortRef.current.signal,
         });
         const json = await res.json();
