@@ -21,7 +21,8 @@ export default function AnimeClient({ initialId }) {
 
   useEffect(() => {
     if (!id) return;
-    api.anime(id).then(setA).catch((e) => setErr(String(e?.message || e)));
+    setErr('');
+    api.anime(id).then((d) => { setA(d); setErr(''); }).catch((e) => setErr(String(e?.message || e)));
   }, [id]);
 
   useEffect(() => {

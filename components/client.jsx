@@ -10,14 +10,18 @@ import { apiUrl } from '../lib/api';
 // so useParams()/baked props can report the placeholder — window.location never lies.
 export function useRouteId(fallback, position = 1) {
   const params = useParams();
-  const [live, setLive] = useState(null);
+  const [live, setLive] = useState(undefined); // undefined = not read yet
+  const [ready, setReady] = useState(false);
   useEffect(() => {
     try {
       setLive(window.location.pathname.split('/').filter(Boolean)[position] || null);
     } catch {
       setLive(null);
     }
+    setReady(true);
   }, [position]);
+  // Wait until the live URL is read — never fetch with the placeholder first.
+  if (!ready) return null;
   const fromParams = params.id || params.query || params.genre || params.letter || null;
   return live || fromParams || fallback;
 }
