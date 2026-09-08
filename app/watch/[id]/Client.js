@@ -19,6 +19,7 @@ function WatchInner({ initialId }) {
   const [servers, setServers] = useState({ sub: [], dub: [] });
   const [stream, setStream] = useState(null);
   const [streamLoading, setStreamLoading] = useState(true);
+  const [seasons, setSeasons] = useState(null);
   const [err, setErr] = useState('');
 
   useEffect(() => {
@@ -27,6 +28,7 @@ function WatchInner({ initialId }) {
     setEpisodes(null);
     api.anime(id).then(setInfo).catch(() => setInfo(null));
     api.schedule(id).then(setSchedule).catch(() => setSchedule(null));
+    api.seasons(id).then(setSeasons).catch(() => setSeasons([]));
     api.episodes(id).then(setEpisodes).catch((e) => setErr(String(e?.message || e)));
   }, [id]);
 
@@ -238,35 +240,69 @@ function WatchInner({ initialId }) {
 
           <DownloadBox episodeId={currentEp} type={type} />
 
-          {!!info?.related?.length && (
+          {(!!seasons?.length || !!info?.related?.length) && (
             <section className="mt-6">
               <h2 className="mb-3 text-lg font-bold text-white">
                 Watch more seasons of this anime
               </h2>
-              <div className="no-scrollbar flex snap-x snap-proximity gap-2 overflow-x-auto pb-2">
-                {info.related
-                  .filter((r) => r.id && r.id !== id)
-                  .slice(0, 18)
-                  .map((r) => (
-                    <a
-                      key={r.id}
-                      href={`/anime/${r.id}`}
-                      className="group w-40 shrink-0 snap-start overflow-hidden rounded-xl bg-surface/70 ring-1 ring-white/5 transition hover:ring-accent/60"
-                    >
-                      <div className="flex h-20 items-center justify-center bg-gradient-to-br from-accent/30 via-surface to-base text-2xl transition group-hover:from-accent/50">
-                        🎬
-                      </div>
-                      <div className="p-2">
-                        <p className="line-clamp-2 min-h-[2rem] text-xs font-medium text-gray-100 group-hover:text-accent">
-                          {r.title}
+              {seasons?.length ? (
+                <div className="no-scrollbar flex snap-x snap-proximity gap-3 overflow-x-auto pb-2">
+                  {seasons
+                    .filter((s) => s.id && s.id !== id)
+                    .map((s) => (
+                      <a
+                        key={s.id}
+                        href={`/watch/${s.id}`}
+                        title={s.title || s.label}
+                        className="group w-44 shrink-0 snap-start overflow-hidden rounded-xl bg-surface/70 ring-1 ring-white/5 transition hover:ring-accent/60"
+                      >
+                        <div className="relative h-24 w-full overflow-hidden bg-black/40">
+                          {s.poster ? (
+                            <img
+                              src={s.poster}
+                              alt={s.title || s.label}
+                              loading="lazy"
+                              className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                            />
+                          ) : null}
+                          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-2 pb-1.5 pt-5">
+                            <p className="truncate text-xs font-bold text-white">
+                              {s.label || s.title}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="line-clamp-2 min-h-[2rem] p-2 text-[11px] leading-snug text-gray-300 group-hover:text-accent">
+                          {s.title}
                         </p>
-                        <p className="mt-1 text-[11px] font-bold text-gray-500 group-hover:text-accent">
-                          Watch now →
-                        </p>
-                      </div>
-                    </a>
-                  ))}
-              </div>
+                      </a>
+                    ))}
+                </div>
+              ) : (
+                <div className="no-scrollbar flex snap-x snap-proximity gap-2 overflow-x-auto pb-2">
+                  {info.related
+                    .filter((r) => r.id && r.id !== id)
+                    .slice(0, 18)
+                    .map((r) => (
+                      <a
+                        key={r.id}
+                        href={`/anime/${r.id}`}
+                        className="group w-40 shrink-0 snap-start overflow-hidden rounded-xl bg-surface/70 ring-1 ring-white/5 transition hover:ring-accent/60"
+                      >
+                        <div className="flex h-20 items-center justify-center bg-gradient-to-br from-accent/30 via-surface to-base text-2xl transition group-hover:from-accent/50">
+                          🎬
+                        </div>
+                        <div className="p-2">
+                          <p className="line-clamp-2 min-h-[2rem] text-xs font-medium text-gray-100 group-hover:text-accent">
+                            {r.title}
+                          </p>
+                          <p className="mt-1 text-[11px] font-bold text-gray-500 group-hover:text-accent">
+                            Watch now →
+                          </p>
+                        </div>
+                      </a>
+                    ))}
+                </div>
+              )}
             </section>
           )}
         </div>
