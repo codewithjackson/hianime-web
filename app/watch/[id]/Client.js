@@ -237,6 +237,38 @@ function WatchInner({ initialId }) {
           </div>
 
           <DownloadBox episodeId={currentEp} type={type} />
+
+          {!!info?.related?.length && (
+            <section className="mt-6">
+              <h2 className="mb-3 text-lg font-bold text-white">
+                Watch more seasons of this anime
+              </h2>
+              <div className="no-scrollbar flex snap-x snap-proximity gap-2 overflow-x-auto pb-2">
+                {info.related
+                  .filter((r) => r.id && r.id !== id)
+                  .slice(0, 18)
+                  .map((r) => (
+                    <a
+                      key={r.id}
+                      href={`/anime/${r.id}`}
+                      className="group w-40 shrink-0 snap-start overflow-hidden rounded-xl bg-surface/70 ring-1 ring-white/5 transition hover:ring-accent/60"
+                    >
+                      <div className="flex h-20 items-center justify-center bg-gradient-to-br from-accent/30 via-surface to-base text-2xl transition group-hover:from-accent/50">
+                        🎬
+                      </div>
+                      <div className="p-2">
+                        <p className="line-clamp-2 min-h-[2rem] text-xs font-medium text-gray-100 group-hover:text-accent">
+                          {r.title}
+                        </p>
+                        <p className="mt-1 text-[11px] font-bold text-gray-500 group-hover:text-accent">
+                          Watch now →
+                        </p>
+                      </div>
+                    </a>
+                  ))}
+              </div>
+            </section>
+          )}
         </div>
 
         <aside className="order-3 min-w-0 lg:order-none lg:col-start-3">
