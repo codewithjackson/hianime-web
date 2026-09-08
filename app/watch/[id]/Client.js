@@ -18,6 +18,7 @@ function WatchInner({ initialId }) {
   const [schedule, setSchedule] = useState(null);
   const [servers, setServers] = useState({ sub: [], dub: [] });
   const [stream, setStream] = useState(null);
+  const [streamLoading, setStreamLoading] = useState(true);
   const [err, setErr] = useState('');
 
   useEffect(() => {
@@ -33,23 +34,34 @@ function WatchInner({ initialId }) {
 
   useEffect(() => {
     if (!currentEp) return;
+    let cancelled = false;
     setStream(null);
     setServers({ sub: [], dub: [] });
+    setStreamLoading(true);
     api.servers(currentEp)
       .then(async (s) => {
+        if (cancelled) return;
         setServers(s);
         const list = s[type].length ? s[type] : s.sub.length ? s.sub : s.dub;
         const picked = list.find((x) => x.name === serverParam) || list[0];
         if (picked) {
           try {
             const st = await api.stream(currentEp, picked.name, picked.type || type);
-            setStream(st);
+            if (!cancelled) setStream(st);
           } catch {
-            setStream(null);
+            if (!cancelled) setStream(null);
           }
         }
+        if (!cancelled) setStreamLoading(false);
       })
-      .catch(() => setStream(null));
+      .catch(() => {
+        if (cancelled) return;
+        setStream(null);
+        setStreamLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [currentEp, type, serverParam]);
 
   useEffect(() => {
@@ -93,8 +105,8 @@ function WatchInner({ initialId }) {
         <span className="text-gray-300">Episode {epNum ?? ''}</span>
       </nav>
 
-      <div id="watch-grid" className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      <div id="watch-grid" className="grid min-w-0 gap-4 lg:grid-cols-3">
+        <div className="min-w-0 lg:col-span-2">
           {schedule?.airDate ? (
             <div className="mb-3 flex items-center gap-2 rounded-2xl bg-accent/10 px-4 py-2.5 text-xs text-gray-200 ring-1 ring-accent/30">
               <span>🚀</span>
@@ -119,8 +131,13 @@ function WatchInner({ initialId }) {
               </span>
             </div>
           ) : null}
-          <div className="overflow-hidden rounded-2xl bg-black ring-1 ring-white/10">
-            {stream?.url ? (
+          <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/10">
+            {streamLoading ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-sm text-gray-400">
+                <span className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-accent" />
+                Loading stream…
+              </div>
+            ) : stream?.url ? (
               <iframe
                 key={stream.url}
                 src={stream.url}
@@ -128,11 +145,11 @@ function WatchInner({ initialId }) {
                 allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
                 sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-orientation-lock"
                 allowFullScreen
-                className="aspect-video w-full"
+                className="absolute inset-0 h-full w-full"
               />
             ) : (
-              <div className="flex aspect-video items-center justify-center text-sm text-gray-400">
-                Stream unavailable for this episode.
+              <div className="absolute inset-0 flex items-center justify-center px-4 text-center text-sm text-gray-400">
+                Stream unavailable for this episode — try another server below.
               </div>
             )}
           </div>
@@ -208,7 +225,7 @@ function WatchInner({ initialId }) {
           <DownloadBox episodeId={currentEp} type={type} />
         </div>
 
-        <div className="flex gap-4 lg:col-span-1 lg:flex-col">
+        <div className="flex min-w-0 gap-4 lg:col-span-1 lg:flex-col">
           {info?.poster ? (
             <a href={`/anime/${id}`} className="hidden shrink-0 lg:block">
               <img
