@@ -265,8 +265,9 @@ function WatchInner({ initialId }) {
                               className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                             />
                           ) : null}
-                          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-2 pb-1.5 pt-5">
-                            <p className="truncate text-xs font-bold text-white">
+                          <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px] transition group-hover:bg-black/40" />
+                          <div className="absolute inset-0 flex items-center justify-center px-2 text-center">
+                            <p className="text-xs font-bold leading-snug text-white">
                               {s.label || s.title}
                             </p>
                           </div>
