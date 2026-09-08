@@ -1,9 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
-    { "source": "/anime/:id*", "destination": "/anime/placeholder.html" },
-    { "source": "/watch/:id*", "destination": "/watch/placeholder.html" },
-    { "source": "/studios/:id*", "destination": "/studios/toei-animation.html" },
-    { "source": "/genre/:genre*", "destination": "/genre/action.html" }
+    { "source": "/anime/:id*", "destination": "/anime/placeholder" },
+    { "source": "/watch/:id*", "destination": "/watch/placeholder" },
+    { "source": "/studios/:id*", "destination": "/studios/toei-animation" },
+    { "source": "/genre/:genre*", "destination": "/genre/action" }
   ]
 }
