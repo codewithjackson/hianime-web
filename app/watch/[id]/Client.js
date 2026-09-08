@@ -83,7 +83,6 @@ function WatchInner({ initialId }) {
   const epIndex = episodes.findIndex((e) => String(e.id) === String(currentEp));
   const prevEp = epIndex > 0 ? episodes[epIndex - 1] : null;
   const nextEp = epIndex >= 0 && epIndex < episodes.length - 1 ? episodes[epIndex + 1] : null;
-  const track = servers[type].length ? servers[type] : [];
 
   return (
     <div className="mx-auto max-w-7xl px-4 pt-6">
@@ -167,37 +166,39 @@ function WatchInner({ initialId }) {
           </div>
 
           <div className="mt-3 rounded-2xl bg-surface/50 p-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wide text-gray-400">
-                {type} servers:
-              </span>
-              {['sub', 'dub'].map((t) => (
-                <a
-                  key={t}
-                  href={`/watch/${id}?ep=${currentEp}&type=${t}`}
-                  className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase transition ${
-                    type === t ? 'bg-accent text-black' : 'bg-white/10 text-gray-200 hover:bg-white/20'
-                  }`}
-                >
-                  {t}
-                </a>
-              ))}
-              <span className="mx-1 h-4 w-px bg-white/10" />
-              {track.map((s) => {
-                const active =
-                  serverParam === s.name || (!serverParam && stream?.server === s.name);
-                return (
-                  <a
-                    key={s.name}
-                    href={`/watch/${id}?ep=${currentEp}&type=${type}&server=${s.name}`}
-                    className={`rounded-full px-4 py-1.5 text-xs font-medium transition ${
-                      active ? 'bg-accent font-bold text-black' : 'bg-white/10 text-gray-200 hover:bg-white/20'
-                    }`}
-                  >
-                    {s.name}
-                  </a>
-                );
-              })}
+            <div className="space-y-2.5">
+              {[
+                ['sub', 'SUB', 'bg-green-500/20 text-green-300'],
+                ['dub', 'DUB', 'bg-sky-500/20 text-sky-300'],
+              ].map(([t, label, badge]) =>
+                servers[t]?.length ? (
+                  <div key={t} className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={`w-16 shrink-0 rounded px-1.5 py-1 text-center text-[11px] font-bold ${badge}`}
+                    >
+                      {label}
+                    </span>
+                    {servers[t].map((s) => {
+                      const active =
+                        type === t &&
+                        (serverParam === s.name || (!serverParam && stream?.server === s.name));
+                      return (
+                        <a
+                          key={s.name}
+                          href={`/watch/${id}?ep=${currentEp}&type=${t}&server=${s.name}`}
+                          className={`rounded-full px-4 py-1.5 text-xs font-medium transition ${
+                            active
+                              ? 'bg-accent font-bold text-black'
+                              : 'bg-white/10 text-gray-200 hover:bg-white/20'
+                          }`}
+                        >
+                          {s.name}
+                        </a>
+                      );
+                    })}
+                  </div>
+                ) : null
+              )}
             </div>
             <p className="mt-2 text-[11px] text-gray-500">
               If the current server doesn&apos;t work, try another one.
