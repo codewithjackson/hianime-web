@@ -254,27 +254,22 @@ function WatchInner({ initialId }) {
                         key={s.id}
                         href={`/watch/${s.id}`}
                         title={s.title || s.label}
-                        className="group w-44 shrink-0 snap-start overflow-hidden rounded-xl bg-surface/70 ring-1 ring-white/5 transition hover:ring-accent/60"
+                        className="group relative h-20 w-40 shrink-0 snap-start overflow-hidden rounded-lg bg-black/40 ring-1 ring-white/5 transition hover:ring-accent/60"
                       >
-                        <div className="relative h-24 w-full overflow-hidden bg-black/40">
-                          {s.poster ? (
-                            <img
-                              src={s.poster}
-                              alt={s.title || s.label}
-                              loading="lazy"
-                              className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                            />
-                          ) : null}
-                          <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px] transition group-hover:bg-black/40" />
-                          <div className="absolute inset-0 flex items-center justify-center px-2 text-center">
-                            <p className="text-xs font-bold leading-snug text-white">
-                              {s.label || s.title}
-                            </p>
-                          </div>
+                        {s.poster ? (
+                          <img
+                            src={s.poster}
+                            alt=""
+                            loading="lazy"
+                            className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                          />
+                        ) : null}
+                        <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px] transition group-hover:bg-black/40" />
+                        <div className="absolute inset-0 flex items-center justify-center px-2 text-center">
+                          <p className="text-xs font-bold leading-snug text-white">
+                            {s.label || s.title}
+                          </p>
                         </div>
-                        <p className="line-clamp-2 min-h-[2rem] p-2 text-[11px] leading-snug text-gray-300 group-hover:text-accent">
-                          {s.title}
-                        </p>
                       </a>
                     ))}
                 </div>
