@@ -4,7 +4,22 @@ import { Header, Mascot } from '../components/client';
 
 export const metadata = {
   title: 'Animaze — Watch Anime Online',
-  description: 'Watch subbed and dubbed anime online.',
+  description: 'Watch subbed and dubbed anime online free in HD. No account needed.',
+  metadataBase: new URL('https://hianime.zone.id'),
+  openGraph: {
+    title: 'Animaze — Watch Anime Online',
+    description: 'Watch subbed and dubbed anime online free in HD. No account needed.',
+    url: 'https://hianime.zone.id',
+    siteName: 'Animaze',
+    images: [{ url: '/mascot.png', alt: 'Animaze mascot' }],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Animaze — Watch Anime Online',
+    description: 'Watch subbed and dubbed anime online free in HD.',
+    images: ['/mascot.png'],
+  },
 };
 
 const EXPLORE_LINKS = [
