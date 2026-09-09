@@ -87,7 +87,20 @@ function WatchInner({ initialId }) {
   const nextEp = epIndex >= 0 && epIndex < episodes.length - 1 ? episodes[epIndex + 1] : null;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pt-6">
+    <div className="relative">
+      {info?.poster ? (
+        <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 hidden overflow-hidden lg:block">
+          <img
+            src={info.poster}
+            alt=""
+            className="h-full w-full scale-125 object-cover opacity-40 blur-3xl"
+          />
+          <div className="absolute inset-0 bg-base/60" />
+          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-base to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-base to-transparent" />
+        </div>
+      ) : null}
+      <div className="relative z-10 mx-auto max-w-7xl px-4 pt-6">
       <RememberProgress
         animeId={id}
         title={info?.title}
@@ -347,6 +360,7 @@ function WatchInner({ initialId }) {
             </a>
           </div>
         </aside>
+      </div>
       </div>
     </div>
   );
