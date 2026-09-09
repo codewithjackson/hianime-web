@@ -119,10 +119,6 @@ function WatchInner({ initialId }) {
         <span className="text-gray-300">Episode {epNum ?? ''}</span>
       </nav>
 
-      <p className="mb-3 text-center text-sm text-gray-300">
-        You are watching <strong className="text-accent">Episode {epNum ?? ''}</strong>
-      </p>
-
       <div id="watch-grid" className="flex min-w-0 flex-col gap-4 lg:grid lg:grid-cols-[260px_minmax(0,1fr)_280px]">
         <aside className="order-2 min-w-0 lg:order-none lg:col-start-1">
           <EpisodeList
@@ -193,8 +189,16 @@ function WatchInner({ initialId }) {
             </div>
           </div>
 
-          <div className="mt-3 rounded-2xl bg-surface/50 p-4">
-            <div className="space-y-2.5">
+          <div className="mt-3 rounded-2xl bg-surface/50 p-4 ring-1 ring-white/5">
+            <div className="flex flex-col gap-4 md:flex-row">
+              <div className="shrink-0 rounded-xl bg-accent/15 px-4 py-3 text-center ring-1 ring-accent/40 md:w-52">
+                <p className="text-xs text-gray-300">You are watching</p>
+                <p className="text-xl font-black text-accent">Episode {epNum ?? ''}</p>
+                <p className="mx-auto mt-1 max-w-[220px] text-[11px] leading-snug text-gray-400">
+                  If current server doesn&apos;t work, please try other servers beside.
+                </p>
+              </div>
+              <div className="min-w-0 flex-1 space-y-2.5">
               {[
                 ['sub', 'SUB', 'bg-green-500/20 text-green-300'],
                 ['dub', 'DUB', 'bg-sky-500/20 text-sky-300'],
@@ -227,10 +231,8 @@ function WatchInner({ initialId }) {
                   </div>
                 ) : null
               )}
+              </div>
             </div>
-            <p className="mt-2 text-[11px] text-gray-500">
-              If the current server doesn&apos;t work, try another one.
-            </p>
             <div className="mt-3 flex gap-2">
               {prevEp ? (
                 <a
