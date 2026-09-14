@@ -412,6 +412,7 @@ export function Spotlight({ items }) {
         />
       ) : null}
       <div className="absolute inset-0 bg-gradient-to-r from-base via-base/80 to-transparent" />
+      <div className="absolute inset-0 bg-base/50 sm:hidden" />
       <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-base to-transparent" />
       <div className="relative mx-auto max-w-7xl px-4 py-8 sm:py-16 md:py-24">
         <p className="text-sm font-bold tracking-wide text-accent">#{cur.rank} Spotlight</p>
@@ -419,7 +420,7 @@ export function Spotlight({ items }) {
           {cur.title}
         </h1>
         {cur.alternativeTitle && cur.alternativeTitle !== cur.title ? (
-          <p className="mt-1 text-sm text-gray-400">{cur.alternativeTitle}</p>
+          <p className="mt-1 hidden text-sm text-gray-400 sm:block">{cur.alternativeTitle}</p>
         ) : null}
         <MetaPills item={cur} />
         <p className="line-clamp-2 mt-4 hidden max-w-xl text-sm leading-relaxed text-gray-300 sm:block">
