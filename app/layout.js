@@ -5,11 +5,11 @@ import { Header, Mascot } from '../components/client';
 export const metadata = {
   title: 'Animaze — Watch Anime Online',
   description: 'Watch subbed and dubbed anime online free in HD. No account needed.',
-  metadataBase: new URL('https://hianime.zone.id'),
+  metadataBase: new URL('https://animaze.zone.id'),
   openGraph: {
     title: 'Animaze — Watch Anime Online',
     description: 'Watch subbed and dubbed anime online free in HD. No account needed.',
-    url: 'https://hianime.zone.id',
+    url: 'https://animaze.zone.id',
     siteName: 'Animaze',
     images: [{ url: '/mascot.png', alt: 'Animaze mascot' }],
     type: 'website',
