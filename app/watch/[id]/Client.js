@@ -1,13 +1,78 @@
 'use client';
 
 import Link from 'next/link';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { EpisodeList, RememberProgress, DownloadBox, AutoNext, TheaterToggle, WatchlistButton, useRouteId } from '../../../components/client';
 import { api } from '../../../lib/api';
 
-function WatchInner({ initialId }) {
-  const searchParams = useSearchParams();
+// If the embed iframe doesn't report a load within this long, the server
+// is treated as dead and the next one is tried automatically.
+const LOAD_TIMEOUT_MS = 7000;
+
+// Expandable download group (e.g. "Kiwi Dub" → 360p/720p/1080p).
+// The popup opens above the chip and flips to the chip's right edge when it
+// would otherwise run off the viewport (small phones, right-side chips).
+function DlGroup({ g, open, onToggle }) {
+  const wrapRef = useRef(null);
+  const [alignRight, setAlignRight] = useState(false);
+  useEffect(() => {
+    if (!open) return;
+    function fit() {
+      const wrap = wrapRef.current;
+      if (!wrap) return;
+      const panel = wrap.querySelector('[data-dl-panel]');
+      if (!panel) return;
+      const chipBox = wrap.getBoundingClientRect();
+      const panelW = panel.scrollWidth || panel.offsetWidth || 0;
+      const vw = window.innerWidth || document.documentElement.clientWidth;
+      setAlignRight(chipBox.left + panelW > vw - 8);
+    }
+    const raf = requestAnimationFrame(fit);
+    window.addEventListener('resize', fit);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', fit);
+    };
+  }, [open ]);
+  return (
+    <span ref={wrapRef} data-dl-group className="relative">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-haspopup="true"
+        aria-expanded={open}
+        className={`rounded-full px-4 py-1.5 text-xs font-medium transition ${
+          open ? 'bg-accent font-bold text-black' : 'bg-white/10 text-gray-200 hover:bg-white/20'
+        }`}
+      >
+        ⭳ {g.name} {open ? '▾' : '▴'}
+      </button>
+      {open ? (
+        <span
+          data-dl-panel
+          className={`absolute bottom-full z-20 mb-2 flex max-w-[calc(100vw-2rem)] flex-wrap gap-1.5 rounded-xl bg-surface p-2 shadow-2xl ring-1 ring-white/10 ${
+            alignRight ? 'right-0' : 'left-0'
+          }`}
+        >
+          {g.links.map((l) => (
+            <a
+              key={l.quality}
+              href={l.url}
+              target="_blank"
+              rel="nofollow noopener noreferrer"
+              className="shrink-0 rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold text-gray-100 transition hover:bg-accent hover:text-black"
+            >
+              {l.quality}
+            </a>
+          ))}
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
+function WatchInner({ initialId }) {  const searchParams = useSearchParams();
   const id = useRouteId(initialId);
   const epParam = searchParams.get('ep');
   const type = searchParams.get('type') === 'dub' ? 'dub' : 'sub';
@@ -17,10 +82,16 @@ function WatchInner({ initialId }) {
   const [episodes, setEpisodes] = useState(null);
   const [schedule, setSchedule] = useState(null);
   const [servers, setServers] = useState({ sub: [], dub: [] });
+  const [serversReady, setServersReady] = useState(false);
   const [downloads, setDownloads] = useState([]);
   const [openDl, setOpenDl] = useState(null);
   const [stream, setStream] = useState(null);
   const [streamLoading, setStreamLoading] = useState(true);
+  const [tryIndex, setTryIndex] = useState(0);
+  const [tryingName, setTryingName] = useState('');
+  const [failedServers, setFailedServers] = useState([]);
+  const [autoMsg, setAutoMsg] = useState('');
+  const watchdog = useRef(null);
   const [seasons, setSeasons] = useState(null);
   const [err, setErr] = useState('');
 
@@ -41,32 +112,89 @@ function WatchInner({ initialId }) {
     let cancelled = false;
     setStream(null);
     setServers({ sub: [], dub: [] });
+    setServersReady(false);
     setStreamLoading(true);
-    api.servers(currentEp)
-      .then(async (s) => {
+    api.servers(currentEp).then(
+      (s) => {
         if (cancelled) return;
         setServers(s);
-        const list = s[type].length ? s[type] : s.sub.length ? s.sub : s.dub;
-        const picked = list.find((x) => x.name === serverParam) || list[0];
-        if (picked) {
-          try {
-            const st = await api.stream(currentEp, picked.name, picked.type || type);
-            if (!cancelled) setStream(st);
-          } catch {
-            if (!cancelled) setStream(null);
-          }
-        }
-        if (!cancelled) setStreamLoading(false);
-      })
-      .catch(() => {
+        setServersReady(true);
+      },
+      () => {
         if (cancelled) return;
+        setServers({ sub: [], dub: [] });
+        setServersReady(true);
         setStream(null);
         setStreamLoading(false);
-      });
+      }
+    );
     return () => {
       cancelled = true;
     };
+  }, [currentEp]);
+
+  // Fresh episode / track / manual server pick → restart from the picked server.
+  useEffect(() => {
+    clearTimeout(watchdog.current);
+    setTryIndex(0);
+    setFailedServers([]);
+    setAutoMsg('');
+    setTryingName('');
   }, [currentEp, type, serverParam]);
+
+  // Walk the candidate servers in order until one actually loads in the player.
+  useEffect(() => {
+    if (!currentEp || !serversReady) return;
+    const list = servers[type].length ? servers[type] : servers.sub.length ? servers.sub : servers.dub;
+    if (!list.length) {
+      setStream(null);
+      setStreamLoading(false);
+      return;
+    }
+    const pickedIdx = Math.max(
+      0,
+      list.findIndex((x) => x.name === serverParam)
+    );
+    const ordered = [list[pickedIdx], ...list.filter((_, i) => i !== pickedIdx)];
+    if (tryIndex >= ordered.length) {
+      setStream(null);
+      setStreamLoading(false);
+      setAutoMsg('All servers failed for this episode — try again later or use the DL links below.');
+      return;
+    }
+    const cand = ordered[tryIndex];
+    let cancelled = false;
+    setStream(null);
+    setStreamLoading(true);
+    setTryingName(cand.name);
+    if (tryIndex > 0) setAutoMsg(`${ordered[tryIndex - 1].name} didn't respond — trying ${cand.name}…`);
+    function markFailed() {
+      setFailedServers((f) => (f.includes(cand.name) ? f : [...f, cand.name]));
+      setTryIndex((i) => i + 1);
+    }
+    api.stream(currentEp, cand.name, cand.type || type).then(
+      (st) => {
+        if (cancelled) return;
+        if (!st?.url) {
+          markFailed();
+          return;
+        }
+        setStream(st);
+        setStreamLoading(false);
+        if (tryIndex > 0) setAutoMsg(`Playing via ${cand.name}.`);
+        clearTimeout(watchdog.current);
+        watchdog.current = setTimeout(markFailed, LOAD_TIMEOUT_MS);
+      },
+      () => {
+        if (cancelled) return;
+        markFailed();
+      }
+    );
+    return () => {
+      cancelled = true;
+      clearTimeout(watchdog.current);
+    };
+  }, [currentEp, servers, serversReady, type, serverParam, tryIndex]);
 
   useEffect(() => {
     if (!currentEp) return;
@@ -188,13 +316,14 @@ function WatchInner({ initialId }) {
             {streamLoading ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-sm text-gray-400">
                 <span className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-accent" />
-                Loading stream…
+                {tryIndex > 0 && tryingName ? `Trying ${tryingName}…` : 'Loading stream…'}
               </div>
             ) : stream?.url ? (
               <iframe
                 key={stream.url}
                 src={stream.url}
                 title={`${info?.title || 'Anime'} episode ${epNum ?? ''}`}
+                onLoad={() => clearTimeout(watchdog.current)}
                 allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
                 // ZokoAnime plays fine sandboxed (safer: blocks tab-hijacks).
                 // Other hosts refuse sandboxed players outright, so they
@@ -237,6 +366,9 @@ function WatchInner({ initialId }) {
                 </p>
               </div>
               <div className="min-w-0 flex-1 space-y-2.5">
+              {autoMsg ? (
+                <p className="text-[11px] leading-snug text-amber-300/90">{autoMsg}</p>
+              ) : null}
               {[
                 ['sub', 'SUB', 'bg-green-500/20 text-green-300'],
                 ['dub', 'DUB', 'bg-sky-500/20 text-sky-300'],
@@ -251,18 +383,24 @@ function WatchInner({ initialId }) {
                     {servers[t].map((s) => {
                       const active =
                         type === t &&
-                        (serverParam === s.name || (!serverParam && stream?.server === s.name));
+                        (stream?.server
+                          ? stream.server === s.name
+                          : (serverParam || servers[t][0]?.name) === s.name);
+                      const failed = failedServers.includes(s.name);
                       return (
                         <a
                           key={s.name}
                           href={`/watch/${id}?ep=${currentEp}&type=${t}&server=${s.name}`}
+                          title={failed ? `${s.name} failed to load — click to retry` : s.name}
                           className={`rounded-full px-4 py-1.5 text-xs font-medium transition ${
                             active
                               ? 'bg-accent font-bold text-black'
-                              : 'bg-white/10 text-gray-200 hover:bg-white/20'
+                              : failed
+                                ? 'bg-white/5 text-gray-500 line-through hover:bg-white/10 hover:text-gray-300'
+                                : 'bg-white/10 text-gray-200 hover:bg-white/20'
                           }`}
                         >
-                          {s.name}
+                          {failed && !active ? `✕ ${s.name}` : s.name}
                         </a>
                       );
                     })}
@@ -287,36 +425,12 @@ function WatchInner({ initialId }) {
                         ⭳ {g.name}
                       </a>
                     ) : (
-                      <span key={g.name} data-dl-group className="relative">
-                        <button
-                          type="button"
-                          onClick={() => setOpenDl((cur) => (cur === g.name ? null : g.name))}
-                          aria-haspopup="true"
-                          aria-expanded={openDl === g.name}
-                          className={`rounded-full px-4 py-1.5 text-xs font-medium transition ${
-                            openDl === g.name
-                              ? 'bg-accent font-bold text-black'
-                              : 'bg-white/10 text-gray-200 hover:bg-white/20'
-                          }`}
-                        >
-                          ⭳ {g.name} {openDl === g.name ? '▾' : '▴'}
-                        </button>
-                        {openDl === g.name ? (
-                          <span className="absolute bottom-full left-0 z-20 mb-2 flex gap-1.5 rounded-xl bg-surface p-2 shadow-2xl ring-1 ring-white/10">
-                            {g.links.map((l) => (
-                              <a
-                                key={l.quality}
-                                href={l.url}
-                                target="_blank"
-                                rel="nofollow noopener noreferrer"
-                                className="rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold text-gray-100 transition hover:bg-accent hover:text-black"
-                              >
-                                {l.quality}
-                              </a>
-                            ))}
-                          </span>
-                        ) : null}
-                      </span>
+                      <DlGroup
+                        key={g.name}
+                        g={g}
+                        open={openDl === g.name}
+                        onToggle={() => setOpenDl((cur) => (cur === g.name ? null : g.name))}
+                      />
                     )
                   )}
                 </div>

@@ -48,6 +48,18 @@ const GENRE_LINKS = [
   'sports',
   'supernatural',
 ];
+const AZ_LINKS = [
+  ['All', '/az-list/all'],
+  ['0–9', '/az-list/0-9'],
+  ...'abcdefghijklmnopqrstuvwxyz'.split('').map((l) => [l.toUpperCase(), `/az-list/${l}`]),
+];
+const INFO_LINKS = [
+  ['Terms of service', '/terms'],
+  ['DMCA', '/dmca'],
+  ['Guides', '/guides'],
+  ['Contact', '/contact'],
+  ['Request', '/request'],
+];
 
 export default function RootLayout({ children }) {
   return (
@@ -55,6 +67,33 @@ export default function RootLayout({ children }) {
       <body>
         <Header />
         <main className="min-h-screen pb-16">{children}</main>        <footer className="relative z-10 border-t border-white/5 bg-black/30">
+          <div className="mx-auto max-w-7xl px-4 pt-8">
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <p className="text-sm font-black tracking-wide text-white">A–Z LIST</p>
+              <span className="hidden h-4 w-px self-center bg-white/15 sm:block" />
+              <p className="text-xs text-gray-400">
+                Searching anime order by alphabet name A to Z.
+              </p>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {AZ_LINKS.map(([label, href]) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="rounded-md bg-white/10 px-2.5 py-1 text-xs font-bold text-gray-300 transition hover:bg-accent hover:text-black"
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+            <nav className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-xs text-gray-400">
+              {INFO_LINKS.map(([label, href]) => (
+                <Link key={href} href={href} className="hover:text-accent">
+                  {label}
+                </Link>
+              ))}
+            </nav>
+          </div>
           <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 md:grid-cols-3">
             <div>
               <p className="text-2xl font-black tracking-tight"><span className="text-white">An</span><span className="text-accent drop-shadow-[0_0_14px_rgba(167,139,250,0.55)]">!</span><span className="text-accent">maze</span></p>
@@ -92,8 +131,9 @@ export default function RootLayout({ children }) {
               </div>
             </div>
           </div>
-          <p className="border-t border-white/5 py-4 text-center text-[11px] text-gray-600">
-            © Animaze — for educational and personal use only.
+          <p className="border-t border-white/5 px-4 py-4 text-center text-[11px] leading-relaxed text-gray-600">
+            Animaze does not store any files on its servers — all media is linked from 3rd-party services.
+            <br />© Animaze — for educational and personal use only.
           </p>
         </footer>
         <Mascot />
