@@ -17,6 +17,8 @@ function WatchInner({ initialId }) {
   const [episodes, setEpisodes] = useState(null);
   const [schedule, setSchedule] = useState(null);
   const [servers, setServers] = useState({ sub: [], dub: [] });
+  const [downloads, setDownloads] = useState([]);
+  const [openDl, setOpenDl] = useState(null);
   const [stream, setStream] = useState(null);
   const [streamLoading, setStreamLoading] = useState(true);
   const [seasons, setSeasons] = useState(null);
@@ -67,9 +69,37 @@ function WatchInner({ initialId }) {
   }, [currentEp, type, serverParam]);
 
   useEffect(() => {
+    if (!currentEp) return;
+    let cancelled = false;
+    setDownloads([]);
+    setOpenDl(null);
+    api.downloads(currentEp).then(
+      (d) => {
+        if (!cancelled) setDownloads(d?.downloads || []);
+      },
+      () => {
+        if (!cancelled) setDownloads([]);
+      }
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [currentEp]);
+
+  useEffect(() => {
     const title = info?.title || id;
     if (title) document.title = `Watch ${title} | Animaze`;
   }, [info, id]);
+
+  useEffect(() => {
+    if (!openDl) return;
+    function onDown(e) {
+      if (e.target?.closest?.('[data-dl-group]')) return;
+      setOpenDl(null);
+    }
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [openDl]);
 
   if (err) return <div className="mx-auto max-w-7xl px-4 pt-20 text-center text-sm text-gray-400">Failed to load episodes: {err}</div>;
   if (!episodes) {
@@ -238,6 +268,58 @@ function WatchInner({ initialId }) {
                   </div>
                 ) : null
               )}
+              {downloads?.length ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="w-16 shrink-0 rounded bg-accent/20 px-1.5 py-1 text-center text-[11px] font-bold text-accent">
+                    ⭳ DL
+                  </span>
+                  {downloads.map((g) =>
+                    g.links?.length === 1 ? (
+                      <a
+                        key={g.name}
+                        href={g.links[0].url}
+                        target="_blank"
+                        rel="nofollow noopener noreferrer"
+                        title={`Download ${g.name} ${g.links[0].quality}`}
+                        className="rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium text-gray-200 transition hover:bg-white/20"
+                      >
+                        ⭳ {g.name}
+                      </a>
+                    ) : (
+                      <span key={g.name} data-dl-group className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setOpenDl((cur) => (cur === g.name ? null : g.name))}
+                          aria-haspopup="true"
+                          aria-expanded={openDl === g.name}
+                          className={`rounded-full px-4 py-1.5 text-xs font-medium transition ${
+                            openDl === g.name
+                              ? 'bg-accent font-bold text-black'
+                              : 'bg-white/10 text-gray-200 hover:bg-white/20'
+                          }`}
+                        >
+                          ⭳ {g.name} {openDl === g.name ? '▾' : '▴'}
+                        </button>
+                        {openDl === g.name ? (
+                          <span className="absolute bottom-full left-0 z-20 mb-2 flex gap-1.5 rounded-xl bg-surface p-2 shadow-2xl ring-1 ring-white/10">
+                            {g.links.map((l) => (
+                              <a
+                                key={l.quality}
+                                href={l.url}
+                                target="_blank"
+                                rel="nofollow noopener noreferrer"
+                                className="rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold text-gray-100 transition hover:bg-accent hover:text-black"
+                              >
+                                {l.quality}
+                              </a>
+                            ))}
+                          </span>
+                        ) : null}
+                      </span>
+                    )
+                  )}
+                </div>
+              ) : null}
               </div>
             </div>
             <div className="mt-3 flex gap-2">
