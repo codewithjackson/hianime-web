@@ -10,6 +10,50 @@ import { api } from '../../../lib/api';
 // is treated as dead and the next one is tried automatically.
 const LOAD_TIMEOUT_MS = 7000;
 
+// Servers that recently failed are remembered briefly so the next episodes
+// don't waste time retrying them — they sink to the back of the queue until
+// the stamp expires (by then a recovered host is tried normally again).
+const DEAD_KEY = 'hianime-dead-servers';
+const DEAD_TTL_MS = 2 * 3600 * 1000;
+
+function getDeadServers() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(DEAD_KEY) || '{}');
+    const now = Date.now();
+    const out = {};
+    for (const [k, v] of Object.entries(raw || {})) {
+      if (typeof v === 'number' && now - v < DEAD_TTL_MS) out[k] = v;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+function rememberDeadServer(name) {
+  if (!name) return;
+  try {
+    const m = getDeadServers();
+    m[name] = Date.now();
+    localStorage.setItem(DEAD_KEY, JSON.stringify(m));
+  } catch {
+    /* private mode — ignore */
+  }
+}
+
+function clearDeadServer(name) {
+  if (!name) return;
+  try {
+    const m = getDeadServers();
+    if (m[name]) {
+      delete m[name];
+      localStorage.setItem(DEAD_KEY, JSON.stringify(m));
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 // Expandable download group (e.g. "Kiwi Dub" → 360p/720p/1080p).
 // The popup opens above the chip and flips to the chip's right edge when it
 // would otherwise run off the viewport (small phones, right-side chips).
@@ -155,7 +199,25 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
       0,
       list.findIndex((x) => x.name === serverParam)
     );
-    const ordered = [list[pickedIdx], ...list.filter((_, i) => i !== pickedIdx)];
+    // An explicitly picked server is always tried first (user's choice).
+    // Otherwise recently-failed servers sink to the back so playback starts
+    // on something healthy instead of re-trying a dead host.
+    const dead = getDeadServers();
+    const isDead = (s) => !!dead[s.name];
+    let ordered;
+    if (serverParam) {
+      const picked = list[pickedIdx];
+      const rest = list.filter((_, i) => i !== pickedIdx);
+      ordered = [picked, ...rest.filter((s) => !isDead(s)), ...rest.filter(isDead)];
+    } else {
+      const healthy = list.filter((s) => !isDead(s));
+      const stale = list.filter(isDead);
+      ordered = healthy.length ? [...healthy, ...stale] : [...list];
+    }
+    if (tryIndex === 0 && ordered.length > 1) {
+      const skipped = list.filter((s) => isDead(s) && s.name !== ordered[0].name).map((s) => s.name);
+      if (skipped.length) setAutoMsg(`Skipping ${skipped.join(', ')} (failed recently) — starting with ${ordered[0].name}.`);
+    }
     if (tryIndex >= ordered.length) {
       setStream(null);
       setStreamLoading(false);
@@ -169,6 +231,7 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
     setTryingName(cand.name);
     if (tryIndex > 0) setAutoMsg(`${ordered[tryIndex - 1].name} didn't respond — trying ${cand.name}…`);
     function markFailed() {
+      rememberDeadServer(cand.name);
       setFailedServers((f) => (f.includes(cand.name) ? f : [...f, cand.name]));
       setTryIndex((i) => i + 1);
     }
@@ -323,7 +386,10 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
                 key={stream.url}
                 src={stream.url}
                 title={`${info?.title || 'Anime'} episode ${epNum ?? ''}`}
-                onLoad={() => clearTimeout(watchdog.current)}
+                onLoad={() => {
+                  clearTimeout(watchdog.current);
+                  if (stream?.server) clearDeadServer(stream.server);
+                }}
                 allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
                 // ZokoAnime plays fine sandboxed (safer: blocks tab-hijacks).
                 // Other hosts refuse sandboxed players outright, so they
