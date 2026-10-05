@@ -77,6 +77,7 @@ export function Header() {
 
   const MENU_LINKS = [
     ['Home', '/home'],
+    ['My List', '/mylist'],
     ['Subbed Anime', '/explore/subbed-anime'],
     ['Dubbed Anime', '/explore/dubbed-anime'],
     ['Most Popular', '/explore/most-popular'],
@@ -150,6 +151,7 @@ export function Header() {
           </Link>
           <Link href="/explore/most-popular" className="hover:text-white">Most Popular</Link>
           <Link href="/explore/top-upcoming" className="hover:text-white">Top Upcoming</Link>
+          <Link href="/mylist" className="hover:text-white">My List</Link>
         </nav>
         <div data-search-area className="relative ml-auto hidden w-full max-w-xs sm:block">
           <form
@@ -247,6 +249,7 @@ export function Header() {
           <Link href="/explore/most-popular" className="shrink-0">Most Popular</Link>
           <Link href="/explore/movie" className="shrink-0">Movies</Link>
           <Link href="/explore/tv" className="shrink-0">TV Series</Link>
+          <Link href="/mylist" className="shrink-0">My List</Link>
         </nav>
       </div>
       </header>
@@ -638,6 +641,8 @@ export function TopTen({ data }) {
 }
 
 const CW_KEY = 'hianime-continue-watching';
+const WL_KEY = 'hianime-watchlist';
+const WL_MAX = 200;
 const PLAYER_ORIGINS = ['https://zokoanime.video', 'https://megaplay.buzz'];
 
 export function AutoNext({ nextUrl, nextLabel }) {
@@ -1405,5 +1410,93 @@ export function SuggestList({ items, query, detailed, onPick }) {
         </Link>
       ) : null}
     </div>
+  );
+}
+
+// ── My List (watchlist) ─────────────────────────────────────────────────────
+// Browser-local bookmark shelf, same pattern as Continue Watching:
+// no account, no API, private to the device. Stored newest-first.
+export function getWatchlist() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(WL_KEY) || '[]');
+    return Array.isArray(raw) ? raw : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeWatchlist(list) {
+  try {
+    localStorage.setItem(WL_KEY, JSON.stringify(list.slice(0, WL_MAX)));
+    window.dispatchEvent(new Event('animaze-watchlist'));
+  } catch {
+    /* private mode — ignore */
+  }
+}
+
+export function addToWatchlist(entry) {
+  if (!entry?.animeId) return;
+  const list = getWatchlist().filter((x) => x.animeId !== entry.animeId);
+  list.unshift({
+    animeId: entry.animeId,
+    title: entry.title || entry.animeId,
+    poster: entry.poster || null,
+    addedAt: Date.now(),
+  });
+  writeWatchlist(list);
+}
+
+export function removeFromWatchlist(animeId) {
+  writeWatchlist(getWatchlist().filter((x) => x.animeId !== animeId));
+}
+
+export function clearWatchlist() {
+  writeWatchlist([]);
+}
+
+export function useWatchlist(animeId) {
+  const [saved, setSaved] = useState(false);
+  useEffect(() => {
+    if (!animeId) return;
+    function sync() {
+      try {
+        setSaved(getWatchlist().some((x) => x.animeId === animeId));
+      } catch {
+        /* ignore */
+      }
+    }
+    sync();
+    window.addEventListener('animaze-watchlist', sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener('animaze-watchlist', sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, [animeId]);
+  function toggle(entry) {
+    if (!animeId) return;
+    if (getWatchlist().some((x) => x.animeId === animeId)) {
+      removeFromWatchlist(animeId);
+    } else {
+      addToWatchlist({ animeId, title: entry?.title, poster: entry?.poster });
+    }
+  }
+  return [saved, toggle];
+}
+
+export function WatchlistButton({ animeId, title, poster }) {
+  const [saved, toggle] = useWatchlist(animeId);
+  if (!animeId) return null;
+  return (
+    <button
+      type="button"
+      onClick={() => toggle({ title, poster })}
+      title={saved ? 'Remove from My List' : 'Save to My List'}
+      className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${
+        saved ? 'bg-accent text-black' : 'bg-white/10 text-gray-200 hover:bg-white/20'
+      }`}
+    >
+      {saved ? '✓ In My List' : '+ Add to List'}
+    </button>
   );
 }

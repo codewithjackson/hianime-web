@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { EpisodeList, RememberProgress, DownloadBox, AutoNext, TheaterToggle, useRouteId } from '../../../components/client';
+import { EpisodeList, RememberProgress, DownloadBox, AutoNext, TheaterToggle, WatchlistButton, useRouteId } from '../../../components/client';
 import { api } from '../../../lib/api';
 
 function WatchInner({ initialId }) {
@@ -223,6 +223,7 @@ function WatchInner({ initialId }) {
                 }
                 nextLabel={nextEp ? `Episode ${nextEp.episodeNumber}` : ''}
               />
+              <WatchlistButton animeId={id} title={info?.title} poster={info?.poster} />
             </div>
           </div>
 

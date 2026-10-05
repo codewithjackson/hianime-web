@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { AnimeCard } from '../../../components/ui';
-import { Synopsis, CastSection, useRouteId } from '../../../components/client';
+import { Synopsis, CastSection, WatchlistButton, useRouteId } from '../../../components/client';
 import { api } from '../../../lib/api';
 
 function Badge({ children, className }) {
@@ -93,13 +93,14 @@ export default function AnimeClient({ initialId }) {
                   {a.type ? <span>• {a.type}</span> : null}
                   {a.duration ? <span>• {a.duration}</span> : null}
                 </div>
-                <div className="mt-4">
+                <div className="mt-4 flex flex-wrap items-center gap-2">
                   <a
                     href={`/watch/${a.id}`}
                     className="rounded-full bg-accent px-7 py-2.5 text-sm font-bold text-black transition hover:brightness-110"
                   >
                     ▶ Watch now
                   </a>
+                  <WatchlistButton animeId={a.id || id} title={a.title} poster={a.poster} />
                 </div>
                 <div className="mt-4">
                   <Synopsis text={a.synopsis} />
