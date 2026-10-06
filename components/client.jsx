@@ -880,6 +880,7 @@ export function RememberProgress({ animeId, title, poster, ep, epNum, type }) {
       const rest = raw.filter((x) => x.animeId !== animeId);
       rest.unshift({ animeId, title, poster, ep: String(ep), epNum, type });
       localStorage.setItem(CW_KEY, JSON.stringify(rest.slice(0, 12)));
+      window.dispatchEvent(new Event('animaze-continue-watching'));
     } catch {
       /* private mode — ignore */
     }
@@ -887,41 +888,93 @@ export function RememberProgress({ animeId, title, poster, ep, epNum, type }) {
   return null;
 }
 
+export function removeFromContinueWatching(animeId) {
+  try {
+    const raw = JSON.parse(localStorage.getItem(CW_KEY) || '[]');
+    localStorage.setItem(
+      CW_KEY,
+      JSON.stringify(raw.filter((x) => x.animeId !== animeId))
+    );
+    window.dispatchEvent(new Event('animaze-continue-watching'));
+  } catch {
+    /* ignore */
+  }
+}
+
+export function clearContinueWatching() {
+  try {
+    localStorage.setItem(CW_KEY, JSON.stringify([]));
+    window.dispatchEvent(new Event('animaze-continue-watching'));
+  } catch {
+    /* ignore */
+  }
+}
+
 export function ContinueWatching() {
   const [list, setList] = useState(null);
   useEffect(() => {
-    try {
-      setList(JSON.parse(localStorage.getItem(CW_KEY) || '[]'));
-    } catch {
-      setList([]);
+    function sync() {
+      try {
+        setList(JSON.parse(localStorage.getItem(CW_KEY) || '[]'));
+      } catch {
+        setList([]);
+      }
     }
+    sync();
+    window.addEventListener('animaze-continue-watching', sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener('animaze-continue-watching', sync);
+      window.removeEventListener('storage', sync);
+    };
   }, []);
   if (!list?.length) return null;
   return (
     <section className="mx-auto mt-8 max-w-7xl px-4">
-      <h2 className="mb-3 flex items-center gap-2 text-xl font-bold text-white">
-        <span className="h-5 w-1 rounded bg-accent" /> Continue Watching
-      </h2>
+      <div className="mb-3 flex items-center gap-2">
+        <h2 className="flex items-center gap-2 text-xl font-bold text-white">
+          <span className="h-5 w-1 rounded bg-accent" /> Continue Watching
+        </h2>
+        <button
+          type="button"
+          onClick={() => {
+            if (window.confirm('Clear your continue-watching list?')) clearContinueWatching();
+          }}
+          className="ml-auto rounded-full bg-white/10 px-4 py-1 text-xs text-gray-300 transition hover:bg-white/20 hover:text-white"
+        >
+          Clear
+        </button>
+      </div>
       <div className="no-scrollbar flex snap-x snap-proximity gap-3 overflow-x-auto pb-2">
         {list.map((x) => (
-          <a
-            key={x.animeId}
-            href={`/watch/${x.animeId}?ep=${x.ep}&type=${x.type || 'sub'}`}
-            className="group w-[220px] shrink-0 snap-start overflow-hidden rounded-xl bg-surface/70 transition hover:ring-1 hover:ring-accent/60"
-          >
-            <div className="flex gap-2 p-2">
-              {x.poster ? (
-                <img src={x.poster} alt="" className="h-20 w-14 shrink-0 rounded-lg object-cover" />
-              ) : null}
-              <div className="min-w-0">
-                <p className="line-clamp-2 text-xs font-medium text-white group-hover:text-accent">
-                  {x.title || x.animeId}
-                </p>
-                <p className="mt-1 text-[11px] text-accent">Ep {x.epNum ?? ''}</p>
-                <p className="mt-2 text-[11px] font-bold text-gray-400">▶ Resume</p>
+          <div key={x.animeId} className="relative w-[220px] shrink-0 snap-start">
+            <a
+              href={`/watch/${x.animeId}?ep=${x.ep}&type=${x.type || 'sub'}`}
+              className="group block overflow-hidden rounded-xl bg-surface/70 transition hover:ring-1 hover:ring-accent/60"
+            >
+              <div className="flex gap-2 p-2">
+                {x.poster ? (
+                  <img src={x.poster} alt="" className="h-20 w-14 shrink-0 rounded-lg object-cover" />
+                ) : null}
+                <div className="min-w-0">
+                  <p className="line-clamp-2 text-xs font-medium text-white group-hover:text-accent">
+                    {x.title || x.animeId}
+                  </p>
+                  <p className="mt-1 text-[11px] text-accent">Ep {x.epNum ?? ''}</p>
+                  <p className="mt-2 text-[11px] font-bold text-gray-400">▶ Resume</p>
+                </div>
               </div>
-            </div>
-          </a>
+            </a>
+            <button
+              type="button"
+              onClick={() => removeFromContinueWatching(x.animeId)}
+              title={`Remove ${x.title || x.animeId} from Continue Watching`}
+              aria-label={`Remove ${x.title || x.animeId} from Continue Watching`}
+              className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/75 text-xs text-gray-300 transition hover:bg-red-500 hover:text-white"
+            >
+              ✕
+            </button>
+          </div>
         ))}
       </div>
     </section>
