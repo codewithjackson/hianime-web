@@ -6,54 +6,6 @@ import { useSearchParams } from 'next/navigation';
 import { EpisodeList, RememberProgress, DownloadBox, AutoNext, TheaterToggle, WatchlistButton, useRouteId } from '../../../components/client';
 import { api } from '../../../lib/api';
 
-// If the embed iframe doesn't report a load within this long, the server
-// is treated as dead and the next one is tried automatically.
-const LOAD_TIMEOUT_MS = 7000;
-
-// Servers that recently failed are remembered briefly so the next episodes
-// don't waste time retrying them — they sink to the back of the queue until
-// the stamp expires (by then a recovered host is tried normally again).
-const DEAD_KEY = 'hianime-dead-servers';
-const DEAD_TTL_MS = 2 * 3600 * 1000;
-
-function getDeadServers() {
-  try {
-    const raw = JSON.parse(localStorage.getItem(DEAD_KEY) || '{}');
-    const now = Date.now();
-    const out = {};
-    for (const [k, v] of Object.entries(raw || {})) {
-      if (typeof v === 'number' && now - v < DEAD_TTL_MS) out[k] = v;
-    }
-    return out;
-  } catch {
-    return {};
-  }
-}
-
-function rememberDeadServer(name) {
-  if (!name) return;
-  try {
-    const m = getDeadServers();
-    m[name] = Date.now();
-    localStorage.setItem(DEAD_KEY, JSON.stringify(m));
-  } catch {
-    /* private mode — ignore */
-  }
-}
-
-function clearDeadServer(name) {
-  if (!name) return;
-  try {
-    const m = getDeadServers();
-    if (m[name]) {
-      delete m[name];
-      localStorage.setItem(DEAD_KEY, JSON.stringify(m));
-    }
-  } catch {
-    /* ignore */
-  }
-}
-
 // Expandable download group (e.g. "Kiwi Dub" → 360p/720p/1080p).
 // The popup opens above the chip and flips to the chip's right edge when it
 // would otherwise run off the viewport (small phones, right-side chips).
@@ -126,16 +78,10 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
   const [episodes, setEpisodes] = useState(null);
   const [schedule, setSchedule] = useState(null);
   const [servers, setServers] = useState({ sub: [], dub: [] });
-  const [serversReady, setServersReady] = useState(false);
   const [downloads, setDownloads] = useState([]);
   const [openDl, setOpenDl] = useState(null);
   const [stream, setStream] = useState(null);
   const [streamLoading, setStreamLoading] = useState(true);
-  const [tryIndex, setTryIndex] = useState(0);
-  const [tryingName, setTryingName] = useState('');
-  const [failedServers, setFailedServers] = useState([]);
-  const [autoMsg, setAutoMsg] = useState('');
-  const watchdog = useRef(null);
   const [seasons, setSeasons] = useState(null);
   const [err, setErr] = useState('');
 
@@ -156,108 +102,32 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
     let cancelled = false;
     setStream(null);
     setServers({ sub: [], dub: [] });
-    setServersReady(false);
     setStreamLoading(true);
-    api.servers(currentEp).then(
-      (s) => {
+    api.servers(currentEp)
+      .then(async (s) => {
         if (cancelled) return;
         setServers(s);
-        setServersReady(true);
-      },
-      () => {
+        const list = s[type].length ? s[type] : s.sub.length ? s.sub : s.dub;
+        const picked = list.find((x) => x.name === serverParam) || list[0];
+        if (picked) {
+          try {
+            const st = await api.stream(currentEp, picked.name, picked.type || type);
+            if (!cancelled) setStream(st);
+          } catch {
+            if (!cancelled) setStream(null);
+          }
+        }
+        if (!cancelled) setStreamLoading(false);
+      })
+      .catch(() => {
         if (cancelled) return;
-        setServers({ sub: [], dub: [] });
-        setServersReady(true);
         setStream(null);
         setStreamLoading(false);
-      }
-    );
+      });
     return () => {
       cancelled = true;
     };
-  }, [currentEp]);
-
-  // Fresh episode / track / manual server pick → restart from the picked server.
-  useEffect(() => {
-    clearTimeout(watchdog.current);
-    setTryIndex(0);
-    setFailedServers([]);
-    setAutoMsg('');
-    setTryingName('');
   }, [currentEp, type, serverParam]);
-
-  // Walk the candidate servers in order until one actually loads in the player.
-  useEffect(() => {
-    if (!currentEp || !serversReady) return;
-    const list = servers[type].length ? servers[type] : servers.sub.length ? servers.sub : servers.dub;
-    if (!list.length) {
-      setStream(null);
-      setStreamLoading(false);
-      return;
-    }
-    const pickedIdx = Math.max(
-      0,
-      list.findIndex((x) => x.name === serverParam)
-    );
-    // An explicitly picked server is always tried first (user's choice).
-    // Otherwise recently-failed servers sink to the back so playback starts
-    // on something healthy instead of re-trying a dead host.
-    const dead = getDeadServers();
-    const isDead = (s) => !!dead[s.name];
-    let ordered;
-    if (serverParam) {
-      const picked = list[pickedIdx];
-      const rest = list.filter((_, i) => i !== pickedIdx);
-      ordered = [picked, ...rest.filter((s) => !isDead(s)), ...rest.filter(isDead)];
-    } else {
-      const healthy = list.filter((s) => !isDead(s));
-      const stale = list.filter(isDead);
-      ordered = healthy.length ? [...healthy, ...stale] : [...list];
-    }
-    if (tryIndex === 0 && ordered.length > 1) {
-      const skipped = list.filter((s) => isDead(s) && s.name !== ordered[0].name).map((s) => s.name);
-      if (skipped.length) setAutoMsg(`Skipping ${skipped.join(', ')} (failed recently) — starting with ${ordered[0].name}.`);
-    }
-    if (tryIndex >= ordered.length) {
-      setStream(null);
-      setStreamLoading(false);
-      setAutoMsg('All servers failed for this episode — try again later or use the DL links below.');
-      return;
-    }
-    const cand = ordered[tryIndex];
-    let cancelled = false;
-    setStream(null);
-    setStreamLoading(true);
-    setTryingName(cand.name);
-    if (tryIndex > 0) setAutoMsg(`${ordered[tryIndex - 1].name} didn't respond — trying ${cand.name}…`);
-    function markFailed() {
-      rememberDeadServer(cand.name);
-      setFailedServers((f) => (f.includes(cand.name) ? f : [...f, cand.name]));
-      setTryIndex((i) => i + 1);
-    }
-    api.stream(currentEp, cand.name, cand.type || type).then(
-      (st) => {
-        if (cancelled) return;
-        if (!st?.url) {
-          markFailed();
-          return;
-        }
-        setStream(st);
-        setStreamLoading(false);
-        if (tryIndex > 0) setAutoMsg(`Playing via ${cand.name}.`);
-        clearTimeout(watchdog.current);
-        watchdog.current = setTimeout(markFailed, LOAD_TIMEOUT_MS);
-      },
-      () => {
-        if (cancelled) return;
-        markFailed();
-      }
-    );
-    return () => {
-      cancelled = true;
-      clearTimeout(watchdog.current);
-    };
-  }, [currentEp, servers, serversReady, type, serverParam, tryIndex]);
 
   useEffect(() => {
     if (!currentEp) return;
@@ -379,17 +249,13 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
             {streamLoading ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-sm text-gray-400">
                 <span className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-accent" />
-                {tryIndex > 0 && tryingName ? `Trying ${tryingName}…` : 'Loading stream…'}
+                Loading stream…
               </div>
             ) : stream?.url ? (
               <iframe
                 key={stream.url}
                 src={stream.url}
                 title={`${info?.title || 'Anime'} episode ${epNum ?? ''}`}
-                onLoad={() => {
-                  clearTimeout(watchdog.current);
-                  if (stream?.server) clearDeadServer(stream.server);
-                }}
                 allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
                 // ZokoAnime plays fine sandboxed (safer: blocks tab-hijacks).
                 // Other hosts refuse sandboxed players outright, so they
@@ -432,9 +298,6 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
                 </p>
               </div>
               <div className="min-w-0 flex-1 space-y-2.5">
-              {autoMsg ? (
-                <p className="text-[11px] leading-snug text-amber-300/90">{autoMsg}</p>
-              ) : null}
               {[
                 ['sub', 'SUB', 'bg-green-500/20 text-green-300'],
                 ['dub', 'DUB', 'bg-sky-500/20 text-sky-300'],
@@ -449,24 +312,18 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
                     {servers[t].map((s) => {
                       const active =
                         type === t &&
-                        (stream?.server
-                          ? stream.server === s.name
-                          : (serverParam || servers[t][0]?.name) === s.name);
-                      const failed = failedServers.includes(s.name);
+                        (serverParam === s.name || (!serverParam && stream?.server === s.name));
                       return (
                         <a
                           key={s.name}
                           href={`/watch/${id}?ep=${currentEp}&type=${t}&server=${s.name}`}
-                          title={failed ? `${s.name} failed to load — click to retry` : s.name}
                           className={`rounded-full px-4 py-1.5 text-xs font-medium transition ${
                             active
                               ? 'bg-accent font-bold text-black'
-                              : failed
-                                ? 'bg-white/5 text-gray-500 line-through hover:bg-white/10 hover:text-gray-300'
-                                : 'bg-white/10 text-gray-200 hover:bg-white/20'
+                              : 'bg-white/10 text-gray-200 hover:bg-white/20'
                           }`}
                         >
-                          {failed && !active ? `✕ ${s.name}` : s.name}
+                          {s.name}
                         </a>
                       );
                     })}

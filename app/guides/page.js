@@ -12,7 +12,7 @@ const GUIDES = [
   ],
   [
     'If a server doesn\u2019t play',
-    'Animaze tries servers for you automatically and moves to the next one if the current embed is dead — watch the status line above the server list. You can also pick any SUB / DUB server manually, or step with the Ep ← / Ep → buttons.',
+    'Pick another SUB / DUB server from the list beside the player, or step with the Ep ← / Ep → buttons. If every server fails, the episode\u2019s DL row still offers direct download links.',
   ],
   [
     'Download an episode',
