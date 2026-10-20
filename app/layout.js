@@ -82,6 +82,14 @@ export default function RootLayout({ children }) {
           strategy="afterInteractive"
           data-cfasync="false"
         />
+        {/* Cloudflare Web Analytics */}
+        <Script
+          id="cloudflare-analytics"
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          strategy="afterInteractive"
+          type="module"
+          data-cf-beacon='{"token": "1b9a2a62a42d4738a91521358754295c"}'
+        />
         <footer className="relative z-10 border-t border-white/5 bg-black/30">
           <div className="mx-auto max-w-7xl px-4 pt-8">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
