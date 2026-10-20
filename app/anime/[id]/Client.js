@@ -14,6 +14,140 @@ function Badge({ children, className }) {
   );
 }
 
+
+function AnimeDownloadsSection({ animeId, animeTitle }) {
+  const [episodes, setEpisodes] = useState([]);
+  const [loadingEps, setLoadingEps] = useState(true);
+  const [selectedEp, setSelectedEp] = useState(null);
+  const [downloads, setDownloads] = useState([]);
+  const [loadingDl, setLoadingDl] = useState(false);
+
+  useEffect(() => {
+    if (!animeId) return;
+    setLoadingEps(true);
+    api.episodes(animeId)
+      .then((eps) => {
+        setEpisodes(eps || []);
+        if (eps?.length) setSelectedEp(eps[0]);
+      })
+      .catch(() => setEpisodes([]))
+      .finally(() => setLoadingEps(false));
+  }, [animeId]);
+
+  useEffect(() => {
+    if (!selectedEp?.id) return;
+    setLoadingDl(true);
+    setDownloads([]);
+    api.downloads(selectedEp.id)
+      .then((d) => setDownloads(d?.downloads || []))
+      .catch(() => setDownloads([]))
+      .finally(() => setLoadingDl(false));
+  }, [selectedEp?.id]);
+
+  if (!loadingEps && !episodes?.length) return null;
+
+  return (
+    <section id="downloads" className="mt-8 rounded-2xl bg-surface/50 p-4 sm:p-6 ring-1 ring-white/5 scroll-mt-20">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 pb-4">
+        <div>
+          <h2 className="flex items-center gap-2 text-lg sm:text-xl font-bold text-white">
+            <span className="h-5 w-1 rounded bg-accent" />
+            Download Episodes
+          </h2>
+          <p className="mt-0.5 text-xs text-gray-400">
+            Select an episode below to get high-speed direct download links (360p, 720p, 1080p).
+          </p>
+        </div>
+        {selectedEp ? (
+          <a
+            href={`/watch/${animeId}?ep=${selectedEp.id}`}
+            className="rounded-full bg-accent/20 px-4 py-1.5 text-xs font-bold text-accent transition hover:bg-accent hover:text-black"
+          >
+            Watch Ep {selectedEp.episodeNumber} →
+          </a>
+        ) : null}
+      </div>
+
+      {loadingEps ? (
+        <div className="flex items-center justify-center py-8 text-sm text-gray-400">
+          <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-accent" />
+          Loading episode list…
+        </div>
+      ) : (
+        <div className="mt-4">
+          <div className="no-scrollbar flex gap-2 overflow-x-auto pb-2">
+            {episodes.map((ep) => {
+              const isSelected = selectedEp?.id === ep.id;
+              return (
+                <button
+                  key={ep.id}
+                  onClick={() => setSelectedEp(ep)}
+                  className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                    isSelected
+                      ? 'bg-accent text-black shadow-md shadow-accent/20'
+                      : 'bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  Ep {ep.episodeNumber}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-4 rounded-xl bg-black/40 p-4 ring-1 ring-white/5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs font-medium text-gray-300">
+                Downloads for <strong className="text-white">Episode {selectedEp?.episodeNumber}</strong>
+                {selectedEp?.title && selectedEp?.title !== `Episode ${selectedEp?.episodeNumber}` ? (
+                  <span className="text-gray-400"> — {selectedEp.title}</span>
+                ) : null}
+              </p>
+              <span className="rounded bg-accent/20 px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-accent uppercase">
+                DOWNLOAD
+              </span>
+            </div>
+
+            <div className="mt-3">
+              {loadingDl ? (
+                <div className="flex items-center gap-2 py-2 text-xs text-gray-400">
+                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/20 border-t-accent" />
+                  Fetching download mirrors…
+                </div>
+              ) : downloads.length ? (
+                <div className="flex flex-wrap items-center gap-3">
+                  {downloads.map((g) => (
+                    <div key={g.name} className="flex flex-wrap items-center gap-2 rounded-lg bg-surface/70 p-2 ring-1 ring-white/10">
+                      <span className="px-1 text-xs font-bold text-gray-300">{g.name}:</span>
+                      {g.links?.map((l) => (
+                        <a
+                          key={l.quality}
+                          href={l.url}
+                          target="_blank"
+                          rel="nofollow noopener noreferrer"
+                          className="rounded-md bg-white/10 px-3 py-1 text-xs font-bold text-gray-100 transition hover:bg-accent hover:text-black"
+                        >
+                          {l.quality}
+                        </a>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400">
+                  Direct mirrors unavailable for this episode.{' '}
+                  <a href={`/watch/${animeId}?ep=${selectedEp?.id}`} className="text-accent underline">
+                    Try watching in player
+                  </a>
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function AnimeClient({ initialId }) {
   const id = useRouteId(initialId);
   const [a, setA] = useState(null);
@@ -99,6 +233,19 @@ export default function AnimeClient({ initialId }) {
                     className="rounded-full bg-accent px-7 py-2.5 text-sm font-bold text-black transition hover:brightness-110"
                   >
                     ▶ Watch now
+                  </a>
+                  <a
+                    href="#downloads"
+                    onClick={(e) => {
+                      const el = document.getElementById('downloads');
+                      if (el) {
+                        e.preventDefault();
+                        el.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
+                    className="rounded-full bg-white/10 px-6 py-2.5 text-sm font-bold text-white ring-1 ring-white/15 backdrop-blur-sm transition hover:bg-white/20 active:scale-95"
+                  >
+                    ⤓ Download
                   </a>
                   <WatchlistButton animeId={a.id || id} title={a.title} poster={a.poster} />
                 </div>
@@ -194,6 +341,7 @@ export default function AnimeClient({ initialId }) {
 
       <div className="mx-auto max-w-7xl px-4">
         <CastSection items={a.characters} />
+        <AnimeDownloadsSection animeId={a.id || id} animeTitle={a.title} />
         <div className="mt-10 grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
             {!!a.recommended?.length && (

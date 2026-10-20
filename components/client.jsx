@@ -416,130 +416,173 @@ function MetaPills({ item }) {
 
 export function Spotlight({ items }) {
   const [i, setI] = useState(0);
-  const touchX = useRef(null);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const isHorizontalSwipe = useRef(null);
 
   useEffect(() => {
-    if (!items?.length) return;
-    const t = setInterval(() => setI((v) => (v + 1) % items.length), 8000);
+    if (!items?.length || isDragging) return;
+    const t = setInterval(() => {
+      setI((v) => (v + 1) % items.length);
+    }, 8000);
     return () => clearInterval(t);
-  }, [items?.length, i]);
+  }, [items?.length, i, isDragging]);
 
   if (!items?.length) return null;
-  const cur = items[i % items.length];
-  const art = cur.banner || cur.poster;
 
   function onTouchStart(e) {
-    touchX.current = e.touches[0].clientX;
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    isHorizontalSwipe.current = null;
+    setIsDragging(true);
   }
-  function onTouchEnd(e) {
-    if (touchX.current === null) return;
-    const dx = e.changedTouches[0].clientX - touchX.current;
-    touchX.current = null;
-    if (Math.abs(dx) < 50) return;
-    setI((v) => (v + (dx < 0 ? 1 : items.length - 1)) % items.length);
+
+  function onTouchMove(e) {
+    if (!isDragging) return;
+    const dx = e.touches[0].clientX - touchStartX.current;
+    const dy = e.touches[0].clientY - touchStartY.current;
+
+    if (isHorizontalSwipe.current === null) {
+      if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
+        isHorizontalSwipe.current = Math.abs(dx) > Math.abs(dy);
+      }
+    }
+
+    if (isHorizontalSwipe.current) {
+      if (e.cancelable) e.preventDefault();
+      setDragOffset(dx);
+    }
+  }
+
+  function onTouchEnd() {
+    if (!isDragging) return;
+    setIsDragging(false);
+
+    const threshold = 40;
+    if (dragOffset < -threshold) {
+      setI((prev) => (prev + 1) % items.length);
+    } else if (dragOffset > threshold) {
+      setI((prev) => (prev - 1 + items.length) % items.length);
+    }
+    setDragOffset(0);
   }
 
   return (
     <div
-      className="relative h-[320px] sm:h-[440px] md:h-[540px] lg:h-[560px] w-full overflow-hidden bg-base touch-pan-y"
+      className="relative h-[320px] sm:h-[440px] md:h-[540px] lg:h-[560px] w-full overflow-hidden bg-base select-none touch-pan-y"
       onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
+      onTouchCancel={onTouchEnd}
     >
-      {/* HiAnime-style artwork container:
-          On desktop, the image starts at left: 26%-28% and extends to the right edge.
-          On mobile, it spans full width with object-top so faces remain visible! */}
+      {/* Sliding flex track */}
       <div
-        className="absolute inset-y-0 right-0 left-0 overflow-hidden md:left-[26%] lg:left-[28%]"
+        className="flex h-full w-full will-change-transform"
         style={{
-          WebkitMaskImage:
-            'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 10%, black 22%, black 100%)',
-          maskImage:
-            'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 10%, black 22%, black 100%)',
+          transform: `translateX(calc(-${i * 100}% + ${dragOffset}px))`,
+          transition: isDragging ? 'none' : 'transform 450ms cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       >
-        {art ? (
-          <img
-            key={art}
-            src={art}
-            alt={cur.title || ''}
-            className="h-full w-full object-cover object-[center_top] md:object-right transition-opacity duration-500"
-          />
-        ) : null}
+        {items.map((item, idx) => {
+          const art = item.banner || item.poster;
+          return (
+            <div key={item.id || idx} className="relative h-full w-full shrink-0 overflow-hidden">
+              {/* HiAnime-style artwork container */}
+              <div
+                className="absolute inset-y-0 right-0 left-0 overflow-hidden md:left-[26%] lg:left-[28%]"
+                style={{
+                  WebkitMaskImage:
+                    'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 10%, black 22%, black 100%)',
+                  maskImage:
+                    'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 10%, black 22%, black 100%)',
+                }}
+              >
+                {art ? (
+                  <img
+                    src={art}
+                    alt={item.title || ''}
+                    loading={idx === 0 ? 'eager' : 'lazy'}
+                    className="h-full w-full object-cover object-[center_top] md:object-right pointer-events-none"
+                  />
+                ) : null}
 
-        {/* Subtle mobile wash to ensure text contrast at bottom */}
-        <div className="absolute inset-0 bg-base/20 md:hidden" />
+                {/* Subtle mobile wash */}
+                <div className="absolute inset-0 bg-base/20 md:hidden" />
+              </div>
+
+              {/* Fades */}
+              <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-base/50 to-transparent hidden md:block" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 sm:h-32 bg-gradient-to-t from-base via-base/80 to-transparent" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-gradient-to-b from-base/60 to-transparent" />
+
+              {/* Main Content Area */}
+              <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-end px-3.5 pb-5 sm:px-4 sm:pb-10 md:pb-14">
+                <div className="z-10 w-full md:w-[58%] lg:w-[48%]">
+                  <p className="text-[11px] font-semibold tracking-wide text-accent sm:text-sm">
+                    #{item.rank} Spotlight
+                  </p>
+
+                  <h1 className="mt-1 line-clamp-2 text-lg font-black leading-tight text-white sm:mt-2 sm:text-3xl md:text-5xl">
+                    {item.title}
+                  </h1>
+
+                  <MetaPills item={item} />
+
+                  <p className="mt-3.5 hidden line-clamp-3 text-sm leading-relaxed text-gray-300 sm:block">
+                    {item.synopsis}
+                  </p>
+
+                  <div className="mt-3 flex items-center gap-2 sm:mt-6 sm:gap-3">
+                    <Link
+                      href={`/watch/${item.id}`}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-1.5 text-xs font-bold text-black shadow-lg shadow-accent/25 transition hover:brightness-110 active:scale-95 sm:gap-2 sm:px-6 sm:py-2.5 sm:text-sm"
+                    >
+                      <svg className="h-3 w-3 sm:h-4 sm:w-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                      Watch Now
+                    </Link>
+
+                    <Link
+                      href={`/anime/${item.id}`}
+                      className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white ring-1 ring-white/15 backdrop-blur-sm transition hover:bg-white/20 active:scale-95 sm:gap-1.5 sm:px-5 sm:py-2.5 sm:text-sm"
+                    >
+                      Detail
+                      <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Subtle fade on the far right edge for desktop */}
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-base/50 to-transparent hidden md:block" />
-
-      {/* Vertical fade at bottom to blend into page background & Continue Watching */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 sm:h-32 bg-gradient-to-t from-base via-base/80 to-transparent" />
-
-      {/* Top subtle fade */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-gradient-to-b from-base/60 to-transparent" />
-
-      {/* Main Content Area - fixed to bottom left just like HiAnime */}
-      <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-end px-3.5 pb-5 sm:px-4 sm:pb-10 md:pb-14">
-        <div className="z-10 w-full md:w-[58%] lg:w-[48%]">
-          <p className="text-[11px] font-semibold tracking-wide text-accent sm:text-sm">
-            #{cur.rank} Spotlight
-          </p>
-
-          <h1 className="mt-1 line-clamp-2 text-lg font-black leading-tight text-white sm:mt-2 sm:text-3xl md:text-5xl">
-            {cur.title}
-          </h1>
-
-          <MetaPills item={cur} />
-
-          <p className="mt-3.5 hidden line-clamp-3 text-sm leading-relaxed text-gray-300 sm:block">
-            {cur.synopsis}
-          </p>
-
-          <div className="mt-3 flex items-center gap-2 sm:mt-6 sm:gap-3">
-            <Link
-              href={`/watch/${cur.id}`}
-              className="inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-1.5 text-xs font-bold text-black shadow-lg shadow-accent/25 transition hover:brightness-110 active:scale-95 sm:gap-2 sm:px-6 sm:py-2.5 sm:text-sm"
-            >
-              <svg className="h-3 w-3 sm:h-4 sm:w-4 fill-current" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-              Watch Now
-            </Link>
-
-            <Link
-              href={`/anime/${cur.id}`}
-              className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white ring-1 ring-white/15 backdrop-blur-sm transition hover:bg-white/20 active:scale-95 sm:gap-1.5 sm:px-5 sm:py-2.5 sm:text-sm"
-            >
-              Detail
-              <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
-        </div>
-
-        {/* Slide navigation controls - hidden on mobile, stacked on desktop */}
-        <div className="absolute bottom-10 right-4 z-20 hidden flex-col gap-1.5 sm:bottom-14 sm:right-6 sm:flex">
-          <button
-            onClick={() => setI((i - 1 + items.length) % items.length)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-white backdrop-blur-sm transition hover:bg-accent hover:text-black active:scale-95"
-            aria-label="Previous slide"
-          >
-            <svg className="h-5 w-5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <button
-            onClick={() => setI((i + 1) % items.length)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-white backdrop-blur-sm transition hover:bg-accent hover:text-black active:scale-95"
-            aria-label="Next slide"
-          >
-            <svg className="h-5 w-5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
+      {/* Slide navigation controls - hidden on mobile, stacked on desktop */}
+      <div className="absolute bottom-10 right-4 z-20 hidden flex-col gap-1.5 sm:bottom-14 sm:right-6 sm:flex">
+        <button
+          onClick={() => setI((i - 1 + items.length) % items.length)}
+          className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-white backdrop-blur-sm transition hover:bg-accent hover:text-black active:scale-95"
+          aria-label="Previous slide"
+        >
+          <svg className="h-5 w-5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <button
+          onClick={() => setI((i + 1) % items.length)}
+          className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-white backdrop-blur-sm transition hover:bg-accent hover:text-black active:scale-95"
+          aria-label="Next slide"
+        >
+          <svg className="h-5 w-5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
       </div>
     </div>
   );

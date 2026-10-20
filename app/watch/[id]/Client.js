@@ -42,7 +42,7 @@ function DlGroup({ g, open, onToggle }) {
           open ? 'bg-accent font-bold text-black' : 'bg-white/10 text-gray-200 hover:bg-white/20'
         }`}
       >
-        ⭳ {g.name} {open ? '▾' : '▴'}
+        {g.name} {open ? '▾' : '▴'}
       </button>
       {open ? (
         <span
@@ -350,8 +350,8 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
               )}
               {downloads?.length ? (
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="w-16 shrink-0 rounded bg-accent/20 px-1.5 py-1 text-center text-[11px] font-bold text-accent">
-                    ⭳ DL
+                  <span className="shrink-0 rounded bg-accent/20 px-2.5 py-1 text-center text-[11px] font-bold tracking-wide text-accent">
+                    DOWNLOAD:
                   </span>
                   {downloads.map((g) =>
                     g.links?.length === 1 ? (
@@ -363,7 +363,7 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
                         title={`Download ${g.name} ${g.links[0].quality}`}
                         className="rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium text-gray-200 transition hover:bg-white/20"
                       >
-                        ⭳ {g.name}
+                        {g.name}
                       </a>
                     ) : (
                       <DlGroup
