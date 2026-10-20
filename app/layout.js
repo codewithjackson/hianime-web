@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Script from 'next/script';
 import './globals.css';
 import { Header, Mascot } from '../components/client';
 
@@ -66,7 +67,22 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <Header />
-        <main className="min-h-screen pb-16">{children}</main>        <footer className="relative z-10 border-t border-white/5 bg-black/30">
+        <main className="min-h-screen pb-16">{children}</main>
+        {/* Adsterra Popunder */}
+        <Script
+          id="adsterra-popunder"
+          src="https://abscloud.org/1/92eb01a283a76bbcbedce35d3c16bdca"
+          strategy="afterInteractive"
+          data-cfasync="false"
+        />
+        {/* Adsterra Social Bar */}
+        <Script
+          id="adsterra-socialbar"
+          src="https://bauval.org/14/1fe027dc7ef89bc22c893ff23b59db54"
+          strategy="afterInteractive"
+          data-cfasync="false"
+        />
+        <footer className="relative z-10 border-t border-white/5 bg-black/30">
           <div className="mx-auto max-w-7xl px-4 pt-8">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
               <p className="text-sm font-black tracking-wide text-white">A–Z LIST</p>
