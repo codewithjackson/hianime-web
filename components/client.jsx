@@ -355,7 +355,7 @@ export function Mascot() {
 
 function MetaPills({ item }) {
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-2.5 text-xs text-gray-200">
+    <div className="mt-3 hidden sm:flex flex-wrap items-center gap-2.5 text-xs text-gray-200">
       {item.type ? (
         <span className="inline-flex items-center gap-1 font-medium text-white/90">
           <svg className="h-3.5 w-3.5 fill-current text-accent" viewBox="0 0 24 24">
@@ -441,13 +441,13 @@ export function Spotlight({ items }) {
 
   return (
     <div
-      className="relative h-[480px] w-full overflow-hidden bg-base touch-pan-y sm:h-[520px] md:h-[560px]"
+      className="relative h-[320px] sm:h-[440px] md:h-[540px] lg:h-[560px] w-full overflow-hidden bg-base touch-pan-y"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
       {/* HiAnime-style artwork container:
           On desktop, the image starts at left: 26%-28% and extends to the right edge.
-          The left side is pure background so text has 100% clarity and the art fits without zooming in! */}
+          On mobile, it spans full width with object-top so faces remain visible! */}
       <div
         className="absolute inset-y-0 right-0 left-0 overflow-hidden md:left-[26%] lg:left-[28%]"
         style={{
@@ -462,29 +462,31 @@ export function Spotlight({ items }) {
             key={art}
             src={art}
             alt={cur.title || ''}
-            className="h-full w-full object-cover object-center md:object-right transition-opacity duration-500"
+            className="h-full w-full object-cover object-[center_top] md:object-right transition-opacity duration-500"
           />
         ) : null}
 
-        {/* Mobile dark overlay to keep text legible */}
-        <div className="absolute inset-0 bg-base/55 md:hidden" />
+        {/* Subtle mobile wash to ensure text contrast at bottom */}
+        <div className="absolute inset-0 bg-base/20 md:hidden" />
       </div>
 
-      {/* Subtle fade on the far right edge */}
+      {/* Subtle fade on the far right edge for desktop */}
       <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-base/50 to-transparent hidden md:block" />
 
-      {/* Vertical fade to blend invisibly into the page background and Continue Watching */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-base via-base/70 to-transparent" />
+      {/* Vertical fade at bottom to blend into page background & Continue Watching */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 sm:h-32 bg-gradient-to-t from-base via-base/80 to-transparent" />
 
       {/* Top subtle fade */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-base/60 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-gradient-to-b from-base/60 to-transparent" />
 
       {/* Main Content Area - fixed to bottom left just like HiAnime */}
-      <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-10 sm:pb-14">
+      <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-end px-3.5 pb-5 sm:px-4 sm:pb-10 md:pb-14">
         <div className="z-10 w-full md:w-[58%] lg:w-[48%]">
-          <p className="text-sm font-semibold tracking-wide text-accent">#{cur.rank} Spotlight</p>
+          <p className="text-[11px] font-semibold tracking-wide text-accent sm:text-sm">
+            #{cur.rank} Spotlight
+          </p>
 
-          <h1 className="mt-2 line-clamp-2 text-2xl font-black leading-tight text-white sm:text-3xl md:text-5xl">
+          <h1 className="mt-1 line-clamp-2 text-lg font-black leading-tight text-white sm:mt-2 sm:text-3xl md:text-5xl">
             {cur.title}
           </h1>
 
@@ -494,12 +496,12 @@ export function Spotlight({ items }) {
             {cur.synopsis}
           </p>
 
-          <div className="mt-5 flex items-center gap-3 sm:mt-6">
+          <div className="mt-3 flex items-center gap-2 sm:mt-6 sm:gap-3">
             <Link
               href={`/watch/${cur.id}`}
-              className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-2.5 text-sm font-bold text-black shadow-lg shadow-accent/25 transition hover:brightness-110 active:scale-95"
+              className="inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-1.5 text-xs font-bold text-black shadow-lg shadow-accent/25 transition hover:brightness-110 active:scale-95 sm:gap-2 sm:px-6 sm:py-2.5 sm:text-sm"
             >
-              <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
+              <svg className="h-3 w-3 sm:h-4 sm:w-4 fill-current" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" />
               </svg>
               Watch Now
@@ -507,17 +509,17 @@ export function Spotlight({ items }) {
 
             <Link
               href={`/anime/${cur.id}`}
-              className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-5 py-2.5 text-sm font-medium text-white ring-1 ring-white/15 backdrop-blur-sm transition hover:bg-white/20 active:scale-95"
+              className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white ring-1 ring-white/15 backdrop-blur-sm transition hover:bg-white/20 active:scale-95 sm:gap-1.5 sm:px-5 sm:py-2.5 sm:text-sm"
             >
               Detail
-              <svg className="h-3.5 w-3.5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
+              <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
             </Link>
           </div>
         </div>
 
-        {/* Slide navigation controls - stacked on the bottom right like HiAnime */}
+        {/* Slide navigation controls - hidden on mobile, stacked on desktop */}
         <div className="absolute bottom-10 right-4 z-20 hidden flex-col gap-1.5 sm:bottom-14 sm:right-6 sm:flex">
           <button
             onClick={() => setI((i - 1 + items.length) % items.length)}
