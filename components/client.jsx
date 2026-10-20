@@ -355,26 +355,61 @@ export function Mascot() {
 
 function MetaPills({ item }) {
   return (
-    <div className="mt-3 hidden flex-wrap items-center gap-2 text-xs sm:flex">
+    <div className="mt-3 flex flex-wrap items-center gap-2.5 text-xs text-gray-200">
+      {item.type ? (
+        <span className="inline-flex items-center gap-1 font-medium text-white/90">
+          <svg className="h-3.5 w-3.5 fill-current text-accent" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
+          </svg>
+          {item.type}
+        </span>
+      ) : null}
+      {item.duration ? (
+        <span className="inline-flex items-center gap-1 text-gray-300">
+          <svg className="h-3.5 w-3.5 stroke-current text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth="2">
+            <circle cx="12" cy="12" r="9" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
+          </svg>
+          {item.duration}
+        </span>
+      ) : null}
+      {item.aired ? (
+        <span className="hidden items-center gap-1 text-gray-300 sm:inline-flex">
+          <svg className="h-3.5 w-3.5 stroke-current text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <path strokeLinecap="round" d="M16 2v4M8 2v4M3 10h18" />
+          </svg>
+          {item.aired}
+        </span>
+      ) : null}
       {item.quality ? (
-        <span className="rounded bg-white px-1.5 py-0.5 font-bold text-black">{item.quality}</span>
+        <span className="rounded bg-accent/90 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-black">
+          {item.quality}
+        </span>
       ) : null}
       {item.rating ? (
-        <span className="rounded border border-white/40 px-1.5 py-0.5 text-gray-200">{item.rating}</span>
-      ) : null}
-      {item.type ? <span className="text-gray-200">● {item.type}</span> : null}
-      {item.duration ? <span className="text-gray-200">● {item.duration}</span> : null}
-      {item.aired ? <span className="text-gray-200">● {item.aired}</span> : null}
-      {item.episodes?.sub ? (
-        <span className="rounded bg-green-500/20 px-1.5 py-0.5 font-bold text-green-300">
-          SUB {item.episodes.sub}
+        <span className="rounded border border-white/20 px-1.5 py-0.5 text-[10px] font-medium text-gray-300">
+          {item.rating}
         </span>
       ) : null}
-      {item.episodes?.dub ? (
-        <span className="rounded bg-sky-500/20 px-1.5 py-0.5 font-bold text-sky-300">
-          DUB {item.episodes.dub}
-        </span>
-      ) : null}
+      <div className="flex items-center gap-1.5 text-[11px] font-bold">
+        {item.episodes?.sub != null ? (
+          <span className="inline-flex items-center gap-1 rounded bg-[#5cf387]/20 px-1.5 py-0.5 text-[#5cf387]">
+            <svg className="h-3 w-3 fill-current" viewBox="0 0 24 24">
+              <path d="M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 7H9.5v-.5h-2v3h2V13H11v1c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1zm7 0h-1.5v-.5h-2v3h2V13H18v1c0 .55-.45 1-1 1h-3c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1z" />
+            </svg>
+            {item.episodes.sub}
+          </span>
+        ) : null}
+        {item.episodes?.dub != null ? (
+          <span className="inline-flex items-center gap-1 rounded bg-[#58c0f5]/20 px-1.5 py-0.5 text-[#58c0f5]">
+            <svg className="h-3 w-3 fill-current" viewBox="0 0 24 24">
+              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5-3c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-2.08c3.39-.49 6-3.39 6-6.92h-2z" />
+            </svg>
+            {item.episodes.dub}
+          </span>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -382,14 +417,17 @@ function MetaPills({ item }) {
 export function Spotlight({ items }) {
   const [i, setI] = useState(0);
   const touchX = useRef(null);
+
   useEffect(() => {
     if (!items?.length) return;
     const t = setInterval(() => setI((v) => (v + 1) % items.length), 8000);
     return () => clearInterval(t);
   }, [items?.length, i]);
+
   if (!items?.length) return null;
   const cur = items[i % items.length];
   const art = cur.banner || cur.poster;
+
   function onTouchStart(e) {
     touchX.current = e.touches[0].clientX;
   }
@@ -400,74 +438,93 @@ export function Spotlight({ items }) {
     if (Math.abs(dx) < 50) return;
     setI((v) => (v + (dx < 0 ? 1 : items.length - 1)) % items.length);
   }
+
   return (
     <div
-      className="relative touch-pan-y overflow-hidden bg-black"
+      className="relative h-[480px] w-full overflow-hidden bg-base touch-pan-y sm:h-[520px] md:h-[560px]"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
+      {/* Background artwork */}
       {art ? (
         <img
           key={art}
           src={art}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover object-center"
+          alt={cur.title || ''}
+          className="absolute inset-0 h-full w-full object-cover object-right md:object-[center_top] transition-opacity duration-500"
         />
       ) : null}
-      <div className="absolute inset-0 bg-gradient-to-r from-base via-base/80 to-transparent" />
-      <div className="absolute inset-0 bg-base/50 sm:hidden" />
-      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-base to-transparent" />
-      <div className="relative mx-auto max-w-7xl px-4 py-8 sm:py-16 md:py-24">
-        <p className="text-sm font-bold tracking-wide text-accent">#{cur.rank} Spotlight</p>
-        <h1 className="mt-2 max-w-2xl text-2xl font-black leading-tight text-white sm:text-4xl md:text-6xl">
-          {cur.title}
-        </h1>
-        {cur.alternativeTitle && cur.alternativeTitle !== cur.title ? (
-          <p className="mt-1 hidden text-sm text-gray-400 sm:block">{cur.alternativeTitle}</p>
-        ) : null}
-        <MetaPills item={cur} />
-        <p className="line-clamp-2 mt-4 hidden max-w-xl text-sm leading-relaxed text-gray-300 sm:block">
-          {cur.synopsis}
-        </p>
-        <div className="mt-5 flex flex-wrap items-center gap-3 sm:mt-6">
-          <Link
-            href={`/watch/${cur.id}`}
-            className="rounded-full bg-accent px-5 py-2 text-sm font-bold text-black transition hover:brightness-110 sm:px-7 sm:py-2.5"
-          >
-            ▶ Watch Now
-          </Link>
-          <Link
-            href={`/anime/${cur.id}`}
-            className="rounded-full bg-white/10 px-5 py-2 text-sm font-medium text-white ring-1 ring-white/20 transition hover:bg-white/20 sm:px-7 sm:py-2.5"
-          >
-            Detail
-          </Link>
-          <div className="ml-2 hidden items-center gap-2 sm:flex">
-            <button
-              onClick={() => setI((i - 1 + items.length) % items.length)}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
-              aria-label="previous"
+
+      {/* Horizontal gradient: keeps left text readable while right anime art stays bright */}
+      <div className="absolute inset-0 bg-gradient-to-r from-base via-base/80 to-transparent via-35% md:via-48%" />
+
+      {/* Subtle mobile overlay for extra legibility */}
+      <div className="absolute inset-0 bg-base/40 sm:hidden" />
+
+      {/* Vertical fade to blend invisibly into the page background */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-base via-base/60 to-transparent" />
+
+      {/* Top subtle fade */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-base/60 to-transparent" />
+
+      {/* Main Content Area - fixed to bottom left just like HiAnime */}
+      <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-10 sm:pb-14">
+        <div className="w-full md:w-[60%] lg:w-[50%] z-10">
+          <p className="text-sm font-semibold tracking-wide text-accent">#{cur.rank} Spotlight</p>
+
+          <h1 className="mt-2 line-clamp-2 text-2xl font-black leading-tight text-white sm:text-3xl md:text-5xl">
+            {cur.title}
+          </h1>
+
+          <MetaPills item={cur} />
+
+          <p className="mt-3.5 hidden line-clamp-3 text-sm leading-relaxed text-gray-300 sm:block">
+            {cur.synopsis}
+          </p>
+
+          <div className="mt-5 flex items-center gap-3 sm:mt-6">
+            <Link
+              href={`/watch/${cur.id}`}
+              className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-2.5 text-sm font-bold text-black shadow-lg shadow-accent/20 transition hover:brightness-110 active:scale-95"
             >
-              ‹
-            </button>
-            <button
-              onClick={() => setI((i + 1) % items.length)}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
-              aria-label="next"
+              <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+              Watch Now
+            </Link>
+
+            <Link
+              href={`/anime/${cur.id}`}
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-5 py-2.5 text-sm font-medium text-white ring-1 ring-white/15 backdrop-blur-sm transition hover:bg-white/20 active:scale-95"
             >
-              ›
-            </button>
+              Detail
+              <svg className="h-3.5 w-3.5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
           </div>
         </div>
-        <div className="mt-6 hidden gap-1.5 sm:flex">
-          {items.slice(0, 10).map((_, n) => (
-            <button
-              key={n}
-              onClick={() => setI(n)}
-              className={`h-1 rounded-full transition-all ${n === i % items.length ? 'w-8 bg-accent' : 'w-4 bg-white/25 hover:bg-white/50'}`}
-              aria-label={`slide ${n + 1}`}
-            />
-          ))}
+
+        {/* Slide navigation controls - stacked on the bottom right like HiAnime */}
+        <div className="absolute bottom-10 right-4 z-20 hidden flex-col gap-1.5 sm:bottom-14 sm:right-6 sm:flex">
+          <button
+            onClick={() => setI((i - 1 + items.length) % items.length)}
+            className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-white backdrop-blur-sm transition hover:bg-accent hover:text-black active:scale-95"
+            aria-label="Previous slide"
+          >
+            <svg className="h-5 w-5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            onClick={() => setI((i + 1) % items.length)}
+            className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-white backdrop-blur-sm transition hover:bg-accent hover:text-black active:scale-95"
+            aria-label="Next slide"
+          >
+            <svg className="h-5 w-5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
       </div>
     </div>
