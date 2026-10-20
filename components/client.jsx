@@ -445,31 +445,43 @@ export function Spotlight({ items }) {
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      {/* Background artwork */}
-      {art ? (
-        <img
-          key={art}
-          src={art}
-          alt={cur.title || ''}
-          className="absolute inset-0 h-full w-full object-cover object-right md:object-[center_top] transition-opacity duration-500"
-        />
-      ) : null}
+      {/* HiAnime-style artwork container:
+          On desktop, the image starts at left: 26%-28% and extends to the right edge.
+          The left side is pure background so text has 100% clarity and the art fits without zooming in! */}
+      <div
+        className="absolute inset-y-0 right-0 left-0 overflow-hidden md:left-[26%] lg:left-[28%]"
+        style={{
+          WebkitMaskImage:
+            'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 10%, black 22%, black 100%)',
+          maskImage:
+            'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 10%, black 22%, black 100%)',
+        }}
+      >
+        {art ? (
+          <img
+            key={art}
+            src={art}
+            alt={cur.title || ''}
+            className="h-full w-full object-cover object-center md:object-right transition-opacity duration-500"
+          />
+        ) : null}
 
-      {/* Horizontal gradient: keeps left text readable while right anime art stays bright */}
-      <div className="absolute inset-0 bg-gradient-to-r from-base via-base/80 to-transparent via-35% md:via-48%" />
+        {/* Mobile dark overlay to keep text legible */}
+        <div className="absolute inset-0 bg-base/55 md:hidden" />
+      </div>
 
-      {/* Subtle mobile overlay for extra legibility */}
-      <div className="absolute inset-0 bg-base/40 sm:hidden" />
+      {/* Subtle fade on the far right edge */}
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-base/50 to-transparent hidden md:block" />
 
-      {/* Vertical fade to blend invisibly into the page background */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-base via-base/60 to-transparent" />
+      {/* Vertical fade to blend invisibly into the page background and Continue Watching */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-base via-base/70 to-transparent" />
 
       {/* Top subtle fade */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-base/60 to-transparent" />
 
       {/* Main Content Area - fixed to bottom left just like HiAnime */}
       <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-10 sm:pb-14">
-        <div className="w-full md:w-[60%] lg:w-[50%] z-10">
+        <div className="z-10 w-full md:w-[58%] lg:w-[48%]">
           <p className="text-sm font-semibold tracking-wide text-accent">#{cur.rank} Spotlight</p>
 
           <h1 className="mt-2 line-clamp-2 text-2xl font-black leading-tight text-white sm:text-3xl md:text-5xl">
@@ -485,7 +497,7 @@ export function Spotlight({ items }) {
           <div className="mt-5 flex items-center gap-3 sm:mt-6">
             <Link
               href={`/watch/${cur.id}`}
-              className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-2.5 text-sm font-bold text-black shadow-lg shadow-accent/20 transition hover:brightness-110 active:scale-95"
+              className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-2.5 text-sm font-bold text-black shadow-lg shadow-accent/25 transition hover:brightness-110 active:scale-95"
             >
               <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" />
