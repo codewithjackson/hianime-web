@@ -257,29 +257,20 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
                 src={stream.url}
                 title={`${info?.title || 'Anime'} episode ${epNum ?? ''}`}
                 allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+                // ZokoAnime plays fine sandboxed (safer: blocks tab-hijacks).
+                // Other hosts refuse sandboxed players outright, so they
+                // must run unsandboxed — same tradeoff hianime itself makes.
+                sandbox={
+                  /zokoanime/i.test(stream.url)
+                    ? 'allow-scripts allow-same-origin allow-forms allow-presentation allow-orientation-lock'
+                    : undefined
+                }
                 allowFullScreen
                 className="absolute inset-0 h-full w-full"
               />
             ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-4 text-center text-sm text-gray-400">
-                <p>Stream unavailable on this server.</p>
-                {servers[type]?.length > 1 ? (
-                  <div className="flex flex-wrap items-center justify-center gap-2">
-                    {servers[type]
-                      .filter((s) => s.name !== serverParam && s.name !== stream?.server)
-                      .map((s) => (
-                        <a
-                          key={s.name}
-                          href={`/watch/${id}?ep=${currentEp}&type=${type}&server=${s.name}`}
-                          className="rounded-full bg-accent px-4 py-1.5 text-xs font-bold text-black transition hover:brightness-110"
-                        >
-                          Try {s.name}
-                        </a>
-                      ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-gray-500">Please try another episode or server below.</p>
-                )}
+              <div className="absolute inset-0 flex items-center justify-center px-4 text-center text-sm text-gray-400">
+                Stream unavailable for this episode — try another server below.
               </div>
             )}
           </div>
