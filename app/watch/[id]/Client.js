@@ -257,14 +257,6 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
                 src={stream.url}
                 title={`${info?.title || 'Anime'} episode ${epNum ?? ''}`}
                 allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-                // ZokoAnime plays fine sandboxed (safer: blocks tab-hijacks).
-                // Other hosts refuse sandboxed players outright, so they
-                // must run unsandboxed — same tradeoff hianime itself makes.
-                sandbox={
-                  /zokoanime/i.test(stream.url)
-                    ? 'allow-scripts allow-same-origin allow-forms allow-presentation allow-orientation-lock'
-                    : undefined
-                }
                 allowFullScreen
                 className="absolute inset-0 h-full w-full"
               />
