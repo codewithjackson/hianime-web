@@ -191,7 +191,7 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
           <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-base to-transparent" />
         </div>
       ) : null}
-      <div className="relative z-10 mx-auto max-w-7xl px-4 pt-6">
+      <div className="relative z-10 mx-auto max-w-7xl px-0 sm:px-4 pt-0 sm:pt-6">
       <RememberProgress
         animeId={id}
         title={info?.title}
@@ -200,7 +200,7 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
         epNum={epNum}
         type={type}
       />
-      <nav className="mb-3 truncate text-xs text-gray-500">
+      <nav className="mb-3 hidden truncate text-xs text-gray-500 sm:block">
         <Link href="/" className="hover:text-gray-300">Home</Link>
         {' › '}
         <Link href={`/anime/${id}`} className="hover:text-gray-300">
@@ -211,7 +211,7 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
       </nav>
 
       <div id="watch-grid" className="flex min-w-0 flex-col gap-4 lg:grid lg:grid-cols-[260px_minmax(0,1fr)_280px]">
-        <aside className="order-2 min-w-0 lg:order-none lg:col-start-1">
+        <aside className="order-2 min-w-0 px-3 sm:px-0 lg:order-none lg:col-start-1">
           <EpisodeList
             animeId={id}
             episodes={episodes}
@@ -245,7 +245,7 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
               </span>
             </div>
           ) : null}
-          <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/10">
+          <div className="relative aspect-video w-full overflow-hidden rounded-none sm:rounded-2xl bg-black ring-0 sm:ring-1 sm:ring-white/10">
             {streamLoading ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-sm text-gray-400">
                 <span className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-accent" />
@@ -275,29 +275,47 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
             )}
           </div>
 
-          <div className="mt-3 rounded-2xl bg-surface/50 p-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <TheaterToggle />
-              <AutoNext
-                nextUrl={
-                  nextEp ? `/watch/${id}?ep=${nextEp.id}&type=${type}` : null
-                }
-                nextLabel={nextEp ? `Episode ${nextEp.episodeNumber}` : ''}
-              />
-              <WatchlistButton animeId={id} title={info?.title} poster={info?.poster} />
-            </div>
-          </div>
+          <div className="mt-2 space-y-2.5 px-3 sm:mt-3 sm:space-y-3 sm:px-0">
+            {schedule?.airDate ? (
+              <div className="flex sm:hidden items-center gap-2 rounded-xl bg-accent/10 px-3 py-2 text-xs text-gray-200 ring-1 ring-accent/30">
+                <span>🚀</span>
+                <span>
+                  Next episode estimated{' '}
+                  <strong className="text-white">
+                    {new Date(schedule.airDate).toLocaleString('en-US', {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: '2-digit',
+                    })}
+                  </strong>
+                </span>
+              </div>
+            ) : null}
 
-          <div className="mt-3 rounded-2xl bg-surface/50 p-4 ring-1 ring-white/5">
-            <div className="flex flex-col gap-4 md:flex-row">
-              <div className="shrink-0 rounded-xl bg-accent/15 px-4 py-3 text-center ring-1 ring-accent/40 md:w-52">
-                <p className="text-xs text-gray-300">You are watching</p>
-                <p className="text-xl font-black text-accent">Episode {epNum ?? ''}</p>
-                <p className="mx-auto mt-1 max-w-[220px] text-[11px] leading-snug text-gray-400">
+            <div className="rounded-xl bg-surface/50 p-2.5 sm:rounded-2xl sm:p-4 ring-1 ring-white/5">
+              <div className="flex flex-wrap items-center gap-2">
+                <TheaterToggle />
+                <AutoNext
+                  nextUrl={
+                    nextEp ? `/watch/${id}?ep=${nextEp.id}&type=${type}` : null
+                  }
+                  nextLabel={nextEp ? `Episode ${nextEp.episodeNumber}` : ''}
+                />
+                <WatchlistButton animeId={id} title={info?.title} poster={info?.poster} />
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-surface/50 p-3.5 sm:rounded-2xl sm:p-4 ring-1 ring-white/5">
+              <div className="mb-3 text-center">
+                <p className="text-xs font-medium text-gray-400">You are watching</p>
+                <p className="text-lg font-black text-accent sm:text-xl">Episode {epNum ?? ''}</p>
+                <p className="mx-auto mt-0.5 max-w-md text-[11px] leading-snug text-gray-400">
                   If current server doesn&apos;t work, please try other servers beside.
                 </p>
               </div>
-              <div className="min-w-0 flex-1 space-y-2.5">
+              <div className="space-y-2.5">
               {[
                 ['sub', 'SUB', 'bg-green-500/20 text-green-300'],
                 ['dub', 'DUB', 'bg-sky-500/20 text-sky-300'],
@@ -359,8 +377,8 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
                 </div>
               ) : null}
               </div>
-            </div>
-            <div className="mt-3 flex gap-2">
+
+              <div className="mt-3.5 flex gap-2 border-t border-white/5 pt-3">
               {prevEp ? (
                 <a
                   href={`/watch/${id}?ep=${prevEp.id}&type=${type}`}
@@ -443,9 +461,10 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
               )}
             </section>
           )}
+          </div>
         </div>
 
-        <aside className="order-3 min-w-0 lg:order-none lg:col-start-3">
+        <aside className="order-3 min-w-0 px-3 sm:px-0 lg:order-none lg:col-start-3">
           <div className="rounded-2xl bg-surface/50 p-4 ring-1 ring-white/5">
             {info?.poster ? (
               <a href={`/anime/${id}`} className="block">
