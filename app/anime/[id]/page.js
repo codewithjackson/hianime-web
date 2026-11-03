@@ -1,3 +1,4 @@
+import Script from 'next/script';
 import AnimeClient from './Client';
 import { apiStatic } from '../../../lib/api';
 
@@ -60,5 +61,15 @@ export async function generateMetadata({ params }) {
 }
 
 export default function AnimePage({ params }) {
-  return <AnimeClient initialId={params.id} />;
+  return (
+    <>
+      <Script
+        id="adsterra-socialbar"
+        src="https://bauval.org/14/1fe027dc7ef89bc22c893ff23b59db54"
+        strategy="afterInteractive"
+        data-cfasync="false"
+      />
+      <AnimeClient initialId={params.id} />
+    </>
+  );
 }

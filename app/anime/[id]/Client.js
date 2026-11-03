@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Script from 'next/script';
 import { useEffect, useState } from 'react';
 import { AnimeCard } from '../../../components/ui';
 import AdBanner from '../../../components/AdBanner';
@@ -151,6 +150,19 @@ function AnimeDownloadsSection({ animeId, animeTitle }) {
 }
 
 export default function AnimeClient({ initialId }) {
+  // Ensure Adsterra Social Bar executes on client-side navigation
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const src = 'https://bauval.org/14/1fe027dc7ef89bc22c893ff23b59db54';
+    if (!document.querySelector(`script[src="${src}"]`)) {
+      const s = document.createElement('script');
+      s.src = src;
+      s.async = true;
+      s.dataset.cfasync = 'false';
+      document.body.appendChild(s);
+    }
+  }, []);
+
   const id = useRouteId(initialId);
   const [a, setA] = useState(null);
   const [err, setErr] = useState('');
@@ -180,13 +192,6 @@ export default function AnimeClient({ initialId }) {
 
   return (
     <>
-      {/* Adsterra Social Bar - only on anime details page */}
-      <Script
-        id="adsterra-socialbar"
-        src="https://bauval.org/14/1fe027dc7ef89bc22c893ff23b59db54"
-        strategy="afterInteractive"
-        data-cfasync="false"
-      />
       <div className="relative overflow-hidden">
         {a.poster ? (
           <img
