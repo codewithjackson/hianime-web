@@ -5,6 +5,7 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { EpisodeList, RememberProgress, DownloadBox, AutoNext, TheaterToggle, WatchlistButton, useRouteId } from '../../../components/client';
 import { api } from '../../../lib/api';
+import AdBanner from '../../../components/AdBanner';
 
 // Expandable download group (e.g. "Kiwi Dub" → 360p/720p/1080p).
 // The popup opens above the chip and flips to the chip's right edge when it
@@ -399,6 +400,8 @@ function WatchInner({ initialId }) {  const searchParams = useSearchParams();
           </div>
 
           <DownloadBox episodeId={currentEp} type={type} />
+
+          <AdBanner />
 
           {(!!seasons?.length || !!info?.related?.length) && (
             <section className="mt-6">

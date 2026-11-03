@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import Script from 'next/script';
 import { useEffect, useState } from 'react';
 import { AnimeCard } from '../../../components/ui';
+import AdBanner from '../../../components/AdBanner';
 import { Synopsis, CastSection, WatchlistButton, useRouteId } from '../../../components/client';
 import { api } from '../../../lib/api';
 
@@ -178,6 +180,13 @@ export default function AnimeClient({ initialId }) {
 
   return (
     <>
+      {/* Adsterra Social Bar - only on anime details page */}
+      <Script
+        id="adsterra-socialbar"
+        src="https://bauval.org/14/1fe027dc7ef89bc22c893ff23b59db54"
+        strategy="afterInteractive"
+        data-cfasync="false"
+      />
       <div className="relative overflow-hidden">
         {a.poster ? (
           <img
@@ -341,6 +350,7 @@ export default function AnimeClient({ initialId }) {
 
       <div className="mx-auto max-w-7xl px-4">
         <CastSection items={a.characters} />
+        <AdBanner />
         <AnimeDownloadsSection animeId={a.id || id} animeTitle={a.title} />
         <div className="mt-10 grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">

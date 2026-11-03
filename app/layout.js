@@ -68,20 +68,6 @@ export default function RootLayout({ children }) {
       <body>
         <Header />
         <main className="min-h-screen pb-16">{children}</main>
-        {/* Adsterra Popunder */}
-        <Script
-          id="adsterra-popunder"
-          src="https://abscloud.org/1/92eb01a283a76bbcbedce35d3c16bdca"
-          strategy="afterInteractive"
-          data-cfasync="false"
-        />
-        {/* Adsterra Social Bar */}
-        <Script
-          id="adsterra-socialbar"
-          src="https://bauval.org/14/1fe027dc7ef89bc22c893ff23b59db54"
-          strategy="afterInteractive"
-          data-cfasync="false"
-        />
         {/* Cloudflare Web Analytics */}
         <Script
           id="cloudflare-analytics"
